@@ -41,11 +41,11 @@ e_satisfied(R, F, C) :- e_b_neg(R, F), feature_effect(C, F, "e_b_bot"), feature_
 
 % subgoal_distance(0,1,1).
 %%%%%%%%%% C3.1 %%%%%%%%%%
-{ subgoal(S, T, R) : t_distance(S, T, D) } != 0 :- subgoal_distance(S, D, R).
+%%%{ subgoal(S, T, R) : t_distance(S, T, D) } != 0 :- subgoal_distance(S, D, R).
 
 %%%%%%%%%% C4.1 %%%%%%%%%%
 % Require that all equivalence classes C underlying a tuple T of subproblem P[S] are good, effectively bounding the width of P[S]
-:- not sat_rule(R, C), subgoal(S, T, R), contain(S, T, C).
+%%%:- not sat_rule(R, C), subgoal(S, T, R), contain(S, T, C).
 
 %%% Unsolvable states can be addressed with d_distance
 %change
@@ -53,54 +53,25 @@ e_satisfied(R, F, C) :- e_b_neg(R, F), feature_effect(C, F, "e_b_bot"), feature_
 
 %%%%%%%%%% C6.2 %%%%%%%%%%
 %change
-:- D < D', t_distance(S, T, D), sat_pair(S, S', R), subgoal_distance(S, D', R), nongoal(S).
+%%%:- D < D', t_distance(S, T, D), sat_pair(S, S', R), subgoal_distance(S, D', R), nongoal(S).
 
 %%%%%%%%%% C6.1 %%%%%%%%%%
 % (Optimal-width): Require solvable states S' closer than subgoal to not be assigned to any rule.
-:- D < D', r_distance(S, C, D), sat_rule(R, C), subgoal_distance(S, D', R), nongoal(S).
+%%%:- D < D', r_distance(S, C, D), sat_rule(R, C), subgoal_distance(S, D', R), nongoal(S).
 
 %%%%%%%%%% C7.1 %%%%%%%%%%
 % Define state pair equivalences that are compatible with rules.
-sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);
-     feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).
-
-
-%sat_rule(R, C) :- 
-%    { feature(F) : not c_satisfied(R, F, C), select(F);
-%      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, 
-%    rule(R), 
-%    state_pair_class(C),
-%    not { c_n_eq(R, F); c_n_gt(R, F) : feature(F), select(F) } > 1,
-%    not { e_n_dec(R, F); e_n_inc(R, F) : feature(F), select(F) } > 1,
-%    not { c_b_pos(R, F); c_b_neg(R, F) : feature(F), select(F) } > 1,
-%    not { e_b_pos(R, F); e_b_neg(R, F) : feature(F), select(F) } > 1.
-
-
+%%%sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);
+%%%     feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).
 % Define state pairs that are compatible with rules.
-sat_pair(S, S', R) :- sat_rule(R, C), cover(S, S', C), nongoal(S).
+%%%sat_pair(S, S', R) :- sat_rule(R, C), cover(S, S', C), nongoal(S).
 
 %%%%%%%%%% C7.2 %%%%%%%%%%
-sat_cond(S, R) :- { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, rule(R), state_pair_class(C), cover(S, _, C), nongoal(S).
-
-%sat_cond(S, R) :- 
-%    { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, 
-%    rule(R), 
-%    state_pair_class(C), 
-%    cover(S, _, C), 
-%    nongoal(S),
-%    not { c_n_eq(R, F); c_n_gt(R, F) : feature(F), select(F) } > 1,
-%    not { e_n_dec(R, F); e_n_inc(R, F) : feature(F), select(F) } > 1,
-%    not { c_b_pos(R, F); c_b_neg(R, F) : feature(F), select(F) } > 1,
-%    not { e_b_pos(R, F); e_b_neg(R, F) : feature(F), select(F) } > 1.
+%%%sat_cond(S, R) :- { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, rule(R), state_pair_class(C), cover(S, _, C), nongoal(S).
 
 % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances_debug --width 1 --workspace workspace --additional_numericals "n_count(r_primitive(carry,0,1))" "n_count(r_diff(r_primitive(at_g,0,1), r_primitive(at,0,1)))" --disable_feature_generation
 
 
-:- { c_n_eq(R, F) : numerical(F), rule(R) } > 1.
-:- { c_n_gt(R, F) : numerical(F), rule(R) } > 1.
-:- { e_b_bot(R, F) : numerical(F), rule(R) } > 1.
-:- { e_n_dec(R, F) : numerical(F), rule(R) } > 1.
-:- { e_n_inc(R, F) : numerical(F), rule(R) } > 1.
 
 % Display
 #show rule/1.

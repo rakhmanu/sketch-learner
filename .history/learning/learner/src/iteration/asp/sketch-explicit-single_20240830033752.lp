@@ -61,46 +61,38 @@ e_satisfied(R, F, C) :- e_b_neg(R, F), feature_effect(C, F, "e_b_bot"), feature_
 
 %%%%%%%%%% C7.1 %%%%%%%%%%
 % Define state pair equivalences that are compatible with rules.
-sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);
-     feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).
-
-
-%sat_rule(R, C) :- 
-%    { feature(F) : not c_satisfied(R, F, C), select(F);
-%      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, 
-%    rule(R), 
-%    state_pair_class(C),
-%    not { c_n_eq(R, F); c_n_gt(R, F) : feature(F), select(F) } > 1,
-%    not { e_n_dec(R, F); e_n_inc(R, F) : feature(F), select(F) } > 1,
-%    not { c_b_pos(R, F); c_b_neg(R, F) : feature(F), select(F) } > 1,
-%    not { e_b_pos(R, F); e_b_neg(R, F) : feature(F), select(F) } > 1.
-
+%%%sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);
+%%%     feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).
+sat_rule(R, C) :- 
+    { feature(F) : not c_satisfied(R, F, C), select(F);
+      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, 
+    rule(R), 
+    state_pair_class(C),
+    not { c_n_eq(R, F); c_n_gt(R, F) : feature(F), select(F) } > 1,
+    not { e_n_dec(R, F); e_n_inc(R, F) : feature(F), select(F) } > 1,
+    not { c_b_pos(R, F); c_b_neg(R, F) : feature(F), select(F) } > 1,
+    not { e_b_pos(R, F); e_b_neg(R, F) : feature(F), select(F) } > 1.
 
 % Define state pairs that are compatible with rules.
 sat_pair(S, S', R) :- sat_rule(R, C), cover(S, S', C), nongoal(S).
 
 %%%%%%%%%% C7.2 %%%%%%%%%%
-sat_cond(S, R) :- { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, rule(R), state_pair_class(C), cover(S, _, C), nongoal(S).
-
-%sat_cond(S, R) :- 
-%    { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, 
-%    rule(R), 
-%    state_pair_class(C), 
-%    cover(S, _, C), 
-%    nongoal(S),
-%    not { c_n_eq(R, F); c_n_gt(R, F) : feature(F), select(F) } > 1,
-%    not { e_n_dec(R, F); e_n_inc(R, F) : feature(F), select(F) } > 1,
-%    not { c_b_pos(R, F); c_b_neg(R, F) : feature(F), select(F) } > 1,
-%    not { e_b_pos(R, F); e_b_neg(R, F) : feature(F), select(F) } > 1.
+%%%sat_cond(S, R) :- { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, rule(R), state_pair_class(C), cover(S, _, C), nongoal(S).
+sat_cond(S, R) :- 
+    { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, 
+    rule(R), 
+    state_pair_class(C), 
+    cover(S, _, C), 
+    nongoal(S),
+    not { c_n_eq(R, F); c_n_gt(R, F) : feature(F), select(F) } > 1,
+    not { e_n_dec(R, F); e_n_inc(R, F) : feature(F), select(F) } > 1,
+    not { c_b_pos(R, F); c_b_neg(R, F) : feature(F), select(F) } > 1,
+    not { e_b_pos(R, F); e_b_neg(R, F) : feature(F), select(F) } > 1.
 
 % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances_debug --width 1 --workspace workspace --additional_numericals "n_count(r_primitive(carry,0,1))" "n_count(r_diff(r_primitive(at_g,0,1), r_primitive(at,0,1)))" --disable_feature_generation
 
 
-:- { c_n_eq(R, F) : numerical(F), rule(R) } > 1.
-:- { c_n_gt(R, F) : numerical(F), rule(R) } > 1.
-:- { e_b_bot(R, F) : numerical(F), rule(R) } > 1.
-:- { e_n_dec(R, F) : numerical(F), rule(R) } > 1.
-:- { e_n_inc(R, F) : numerical(F), rule(R) } > 1.
+
 
 % Display
 #show rule/1.

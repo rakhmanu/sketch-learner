@@ -100,7 +100,7 @@ class D2sepDlplanPolicyFactory(DlplanPolicyFactory):
         dlplan_features = set()
         for symbol in symbols:
             if symbol.name == "select":
-                f_idx = symbol.arguments.number #symbol.arguments[0].number
+                f_idx = symbol.arguments.number
                 dlplan_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)
         rules = set()
         for symbol in symbols:

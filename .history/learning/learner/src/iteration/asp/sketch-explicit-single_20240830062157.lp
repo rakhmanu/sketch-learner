@@ -98,6 +98,7 @@ sat_cond(S, R) :- { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, rule
 
 :- { c_n_eq(R, F) : numerical(F), rule(R) } > 1.
 :- { c_n_gt(R, F) : numerical(F), rule(R) } > 1.
+
 :- { e_b_bot(R, F) : numerical(F), rule(R) } > 1.
 :- { e_n_dec(R, F) : numerical(F), rule(R) } > 1.
 :- { e_n_inc(R, F) : numerical(F), rule(R) } > 1.

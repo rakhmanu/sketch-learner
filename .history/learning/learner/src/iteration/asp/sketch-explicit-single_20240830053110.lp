@@ -28,7 +28,15 @@ e_satisfied(R, F, C) :- e_b_bot(R, F), feature_effect(C, F, "e_b_bot"), boolean(
 e_satisfied(R, F, C) :- e_n_bot(R, F), feature_effect(C, F, "e_n_bot"), numerical(F), rule(R), state_pair_class(C).
 e_satisfied(R, F, C) :- e_b_pos(R, F), feature_effect(C, F, "e_b_bot"), feature_condition(C, F, "c_b_pos"), boolean(F), rule(R), state_pair_class(C).
 e_satisfied(R, F, C) :- e_b_neg(R, F), feature_effect(C, F, "e_b_bot"), feature_condition(C, F, "c_b_neg"), boolean(F), rule(R), state_pair_class(C).
+% Ensure that no more than one condition is selected per rule
+:- { c_n_eq(R, F), c_n_gt(R, F) : numerical(F), rule(R) } > 1.
 
+% Ensure that no more than one effect is selected per rule
+:- { e_n_dec(R, F), e_n_inc(R, F), e_n_bot(R, F) : numerical(F), rule(R) } > 1.
+
+% Ensure valid combinations of conditions and effects
+:- not (c_n_eq(R, F), e_n_dec(R, F)) :- rule(R), numerical(F).
+:- not (c_n_gt(R, F), e_n_inc(R, F)) :- rule(R), numerical(F).
 %change
 %%%%%{alive_selected(S)} = 1 :- alive(S), nongoal(S).
 %{alive_selected(S) : alive(S), nongoal(S)} = 1.
@@ -95,12 +103,6 @@ sat_cond(S, R) :- { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, rule
 
 % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances_debug --width 1 --workspace workspace --additional_numericals "n_count(r_primitive(carry,0,1))" "n_count(r_diff(r_primitive(at_g,0,1), r_primitive(at,0,1)))" --disable_feature_generation
 
-
-:- { c_n_eq(R, F) : numerical(F), rule(R) } > 1.
-:- { c_n_gt(R, F) : numerical(F), rule(R) } > 1.
-:- { e_b_bot(R, F) : numerical(F), rule(R) } > 1.
-:- { e_n_dec(R, F) : numerical(F), rule(R) } > 1.
-:- { e_n_inc(R, F) : numerical(F), rule(R) } > 1.
 
 % Display
 #show rule/1.
