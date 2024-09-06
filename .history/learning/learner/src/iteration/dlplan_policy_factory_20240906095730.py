@@ -46,8 +46,10 @@ class ExplicitDlplanPolicyFactory(DlplanPolicyFactory):
         for symbol in symbols:
             if symbol.name == "select":
                 f_idx = symbol.arguments[0].number
-                selected_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)
+                #selected_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)
                 #print("f_idx:", f_idx)
+                if "c_bot" not in str(selected_features):
+                    selected_features.add(selected_features)
         return selected_features
 
     def _add_rules(self, symbols: List[Symbol], preprocessing_data: PreprocessingData, iteration_data: IterationData, selected_features: MutableSet[Union[dlplan_core.Boolean, dlplan_core.Numerical]]):
@@ -100,7 +102,7 @@ class D2sepDlplanPolicyFactory(DlplanPolicyFactory):
         dlplan_features = set()
         for symbol in symbols:
             if symbol.name == "select":
-                f_idx = symbol.arguments[0].number
+                f_idx = symbol.arguments.number #symbol.arguments[0].number
                 dlplan_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)
         rules = set()
         for symbol in symbols:

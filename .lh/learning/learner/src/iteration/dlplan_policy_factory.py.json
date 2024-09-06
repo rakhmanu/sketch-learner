@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 2,
+            "activePatchIndex": 5,
             "patches": [
                 {
                     "date": 1721317432519,
@@ -16,6 +16,18 @@
                 {
                     "date": 1721335715745,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -99,9 +99,9 @@\n         policy_builder = preprocessing_data.domain_data.policy_builder\n         dlplan_features = set()\n         for symbol in symbols:\n             if symbol.name == \"select\":\n-                f_idx = symbol.arguments.number\n+                f_idx = symbol.arguments.number #symbol.arguments[0].number\n                 dlplan_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)\n         rules = set()\n         for symbol in symbols:\n             if symbol.name == \"good\":\n"
+                },
+                {
+                    "date": 1725609382500,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -47,8 +47,10 @@\n             if symbol.name == \"select\":\n                 f_idx = symbol.arguments[0].number\n                 selected_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)\n                 #print(\"f_idx:\", f_idx)\n+                if \"c_bot\" not in str(selected_features):\n+                    selected_features.add(selected_features)\n         return selected_features\n \n     def _add_rules(self, symbols: List[Symbol], preprocessing_data: PreprocessingData, iteration_data: IterationData, selected_features: MutableSet[Union[dlplan_core.Boolean, dlplan_core.Numerical]]):\n         \"\"\" \"\"\"\n"
+                },
+                {
+                    "date": 1725609450058,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -45,9 +45,9 @@\n         selected_features = set()\n         for symbol in symbols:\n             if symbol.name == \"select\":\n                 f_idx = symbol.arguments[0].number\n-                selected_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)\n+                #selected_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)\n                 #print(\"f_idx:\", f_idx)\n                 if \"c_bot\" not in str(selected_features):\n                     selected_features.add(selected_features)\n         return selected_features\n"
+                },
+                {
+                    "date": 1725609467614,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -48,9 +48,9 @@\n                 f_idx = symbol.arguments[0].number\n                 #selected_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)\n                 #print(\"f_idx:\", f_idx)\n                 if \"c_bot\" not in str(selected_features):\n-                    selected_features.add(selected_features)\n+                    selected_features.add(iteration_data.feature_pool[f_idx].dlplan_feature)\n         return selected_features\n \n     def _add_rules(self, symbols: List[Symbol], preprocessing_data: PreprocessingData, iteration_data: IterationData, selected_features: MutableSet[Union[dlplan_core.Boolean, dlplan_core.Numerical]]):\n         \"\"\" \"\"\"\n"
                 }
             ],
             "date": 1721317432519,

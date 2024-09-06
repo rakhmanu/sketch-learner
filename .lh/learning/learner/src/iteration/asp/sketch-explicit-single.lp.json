@@ -3,7 +3,7 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 178,
+            "activePatchIndex": 188,
             "patches": [
                 {
                     "date": 1721317551562,
@@ -720,6 +720,46 @@
                 {
                     "date": 1725019580473,
                     "content": "Index: \n===================================================================\n--- \n+++ \n@@ -64,42 +64,19 @@\n sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);\n      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).\n \n \n-%sat_rule(R, C) :- \n-%    { feature(F) : not c_satisfied(R, F, C), select(F);\n-%      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, \n-%    rule(R), \n-%    state_pair_class(C),\n-%    not { c_n_eq(R, F); c_n_gt(R, F) : feature(F), select(F) } > 1,\n-%    not { e_n_dec(R, F); e_n_inc(R, F) : feature(F), select(F) } > 1,\n-%    not { c_b_pos(R, F); c_b_neg(R, F) : feature(F), select(F) } > 1,\n-%    not { e_b_pos(R, F); e_b_neg(R, F) : feature(F), select(F) } > 1.\n-\n-\n % Define state pairs that are compatible with rules.\n sat_pair(S, S', R) :- sat_rule(R, C), cover(S, S', C), nongoal(S).\n \n %%%%%%%%%% C7.2 %%%%%%%%%%\n sat_cond(S, R) :- { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, rule(R), state_pair_class(C), cover(S, _, C), nongoal(S).\n \n-%sat_cond(S, R) :- \n-%    { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, \n-%    rule(R), \n-%    state_pair_class(C), \n-%    cover(S, _, C), \n-%    nongoal(S),\n-%    not { c_n_eq(R, F); c_n_gt(R, F) : feature(F), select(F) } > 1,\n-%    not { e_n_dec(R, F); e_n_inc(R, F) : feature(F), select(F) } > 1,\n-%    not { c_b_pos(R, F); c_b_neg(R, F) : feature(F), select(F) } > 1,\n-%    not { e_b_pos(R, F); e_b_neg(R, F) : feature(F), select(F) } > 1.\n \n % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances_debug --width 1 --workspace workspace --additional_numericals \"n_count(r_primitive(carry,0,1))\" \"n_count(r_diff(r_primitive(at_g,0,1), r_primitive(at,0,1)))\" --disable_feature_generation\n \n \n-%:- { c_n_gt(R, F) : numerical(F), rule(R) } > 1.\n \n-\n % Display\n #show rule/1.\n #show select/1.\n \n"
+                },
+                {
+                    "date": 1725610538370,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -47,13 +47,11 @@\n % Require that all equivalence classes C underlying a tuple T of subproblem P[S] are good, effectively bounding the width of P[S]\n :- not sat_rule(R, C), subgoal(S, T, R), contain(S, T, C).\n \n %%% Unsolvable states can be addressed with d_distance\n-%change\n-%:- D <= D',  subgoal_distance(S, D, R), sat_rule(R, C), d_distance(S, C, D'), initial(S), unsolvable(S), nongoal(S).     \n+:- D <= D',  subgoal_distance(S, D, R), sat_rule(R, C), d_distance(S, C, D'), initial(S), unsolvable(S), nongoal(S).     \n \n %%%%%%%%%% C6.2 %%%%%%%%%%\n-%change\n :- D < D', t_distance(S, T, D), sat_pair(S, S', R), subgoal_distance(S, D', R), nongoal(S).\n \n %%%%%%%%%% C6.1 %%%%%%%%%%\n % (Optimal-width): Require solvable states S' closer than subgoal to not be assigned to any rule.\n@@ -63,9 +61,8 @@\n % Define state pair equivalences that are compatible with rules.\n sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);\n      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).\n \n-\n % Define state pairs that are compatible with rules.\n sat_pair(S, S', R) :- sat_rule(R, C), cover(S, S', C), nongoal(S).\n \n %%%%%%%%%% C7.2 %%%%%%%%%%\n"
+                },
+                {
+                    "date": 1725611615850,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -7,12 +7,12 @@\n % Generate rules\n rule(1).\n \n % Generate feature conditions and effects\n-{ c_n_eq(R, F); c_n_gt(R, F) } = 1 :- rule(R), numerical(F), select(F).\n-{ c_b_pos(R, F); c_b_neg(R, F) } = 1 :- rule(R), boolean(F), select(F).\n-{ e_n_dec(R, F); e_n_inc(R, F); e_n_bot(R, F) } = 1 :- rule(R), numerical(F), select(F).\n-{ e_b_pos(R, F); e_b_neg(R, F); e_b_bot(R, F) } = 1 :- rule(R), boolean(F), select(F).\n+{ c_n_eq(R, F); c_n_gt(R, F) } = 1 :- rule(R), numerical(F), select(F),  F = \"c_bot\".\n+{ c_b_pos(R, F); c_b_neg(R, F) } = 1 :- rule(R), boolean(F), select(F),  F = \"c_bot\".\n+{ e_n_dec(R, F); e_n_inc(R, F); e_n_bot(R, F) } = 1 :- rule(R), numerical(F), select(F), F = \"c_bot\".\n+{ e_b_pos(R, F); e_b_neg(R, F); e_b_bot(R, F) } = 1 :- rule(R), boolean(F), select(F),  F = \"c_bot\".\n \n \n % Define equivalence class C and rule R have same feature condition on F\n c_satisfied(R, F, C) :- c_n_eq(R, F), feature_condition(C, F, \"c_n_eq\"), numerical(F), rule(R), state_pair_class(C).\n"
+                },
+                {
+                    "date": 1725611639803,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -7,12 +7,12 @@\n % Generate rules\n rule(1).\n \n % Generate feature conditions and effects\n-{ c_n_eq(R, F); c_n_gt(R, F) } = 1 :- rule(R), numerical(F), select(F),  F = \"c_bot\".\n-{ c_b_pos(R, F); c_b_neg(R, F) } = 1 :- rule(R), boolean(F), select(F),  F = \"c_bot\".\n-{ e_n_dec(R, F); e_n_inc(R, F); e_n_bot(R, F) } = 1 :- rule(R), numerical(F), select(F), F = \"c_bot\".\n-{ e_b_pos(R, F); e_b_neg(R, F); e_b_bot(R, F) } = 1 :- rule(R), boolean(F), select(F),  F = \"c_bot\".\n+{ c_n_eq(R, F); c_n_gt(R, F) } = 1 :- rule(R), numerical(F), select(F).\n+{ c_b_pos(R, F); c_b_neg(R, F) } = 1 :- rule(R), boolean(F), select(F).\n+{ e_n_dec(R, F); e_n_inc(R, F); e_n_bot(R, F) } = 1 :- rule(R), numerical(F), select(F).\n+{ e_b_pos(R, F); e_b_neg(R, F); e_b_bot(R, F) } = 1 :- rule(R), boolean(F), select(F).\n \n \n % Define equivalence class C and rule R have same feature condition on F\n c_satisfied(R, F, C) :- c_n_eq(R, F), feature_condition(C, F, \"c_n_eq\"), numerical(F), rule(R), state_pair_class(C).\n@@ -61,8 +61,9 @@\n % Define state pair equivalences that are compatible with rules.\n sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);\n      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).\n \n+\n % Define state pairs that are compatible with rules.\n sat_pair(S, S', R) :- sat_rule(R, C), cover(S, S', C), nongoal(S).\n \n %%%%%%%%%% C7.2 %%%%%%%%%%\n"
+                },
+                {
+                    "date": 1725611689042,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -89,5 +89,6 @@\n #show c_b_neg/2.\n \n #show e_b_pos/2.\n #show e_b_neg/2.\n-#show e_b_bot/2.\n\\ No newline at end of file\n+#show e_b_bot/2.\n+\n"
+                },
+                {
+                    "date": 1725612025002,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,7 +1,7 @@\n % Optimization for fewest number of rules, then smallest sum over feature complexities\n #minimize { C@2,complexity(F, C) : complexity(F, C), feature(F), select(F) }.\n-\n+:- feature(F), F = \"c_bot\".\n %%%%%%%%%% C1 %%%%%%%%%%\n % Generate selected features\n { select(F) } :- feature(F).\n % Generate rules\n"
+                },
+                {
+                    "date": 1725612112777,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,10 +1,10 @@\n % Optimization for fewest number of rules, then smallest sum over feature complexities\n #minimize { C@2,complexity(F, C) : complexity(F, C), feature(F), select(F) }.\n-:- feature(F), F = \"c_bot\".\n+\n %%%%%%%%%% C1 %%%%%%%%%%\n % Generate selected features\n-{ select(F) } :- feature(F).\n+{ select(F) } :- feature(F), not F = \"c_bot\".\n % Generate rules\n rule(1).\n \n % Generate feature conditions and effects\n"
+                },
+                {
+                    "date": 1725612148034,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -2,9 +2,9 @@\n #minimize { C@2,complexity(F, C) : complexity(F, C), feature(F), select(F) }.\n \n %%%%%%%%%% C1 %%%%%%%%%%\n % Generate selected features\n-{ select(F) } :- feature(F), not F = \"c_bot\".\n+{ select(F) } :- feature(F).\n % Generate rules\n rule(1).\n \n % Generate feature conditions and effects\n"
+                },
+                {
+                    "date": 1725612348586,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -3,8 +3,11 @@\n \n %%%%%%%%%% C1 %%%%%%%%%%\n % Generate selected features\n { select(F) } :- feature(F).\n+:- select(F), irrelevant_feature(F).\n+irrelevant_feature(\"c_bot\").\n+{ select(F) } :- feature(F), not irrelevant_feature(F).\n % Generate rules\n rule(1).\n \n % Generate feature conditions and effects\n"
+                },
+                {
+                    "date": 1725612383104,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,12 +1,11 @@\n % Optimization for fewest number of rules, then smallest sum over feature complexities\n #minimize { C@2,complexity(F, C) : complexity(F, C), feature(F), select(F) }.\n-\n+irrelevant_feature(\"c_bot\").\n %%%%%%%%%% C1 %%%%%%%%%%\n % Generate selected features\n { select(F) } :- feature(F).\n :- select(F), irrelevant_feature(F).\n-irrelevant_feature(\"c_bot\").\n { select(F) } :- feature(F), not irrelevant_feature(F).\n % Generate rules\n rule(1).\n \n"
+                },
+                {
+                    "date": 1725612425161,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,12 +1,10 @@\n % Optimization for fewest number of rules, then smallest sum over feature complexities\n #minimize { C@2,complexity(F, C) : complexity(F, C), feature(F), select(F) }.\n-irrelevant_feature(\"c_bot\").\n+\n %%%%%%%%%% C1 %%%%%%%%%%\n % Generate selected features\n { select(F) } :- feature(F).\n-:- select(F), irrelevant_feature(F).\n-{ select(F) } :- feature(F), not irrelevant_feature(F).\n % Generate rules\n rule(1).\n \n % Generate feature conditions and effects\n@@ -92,5 +90,4 @@\n \n #show e_b_pos/2.\n #show e_b_neg/2.\n #show e_b_bot/2.\n-\n"
                 }
             ],
             "date": 1721317551562,

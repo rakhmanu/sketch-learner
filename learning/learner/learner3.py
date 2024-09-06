@@ -22,7 +22,6 @@ def unsolvable_states_from_solution(symbols):
                 instance_id = int(symbol.arguments[1].number)  
                 unsolvable_states.add((state_id, instance_id))
     return unsolvable_states
-
 def learn_sketch_for_problem_class(
     domain_filepath: Path,
     problems_directory: Path,
@@ -82,10 +81,8 @@ def learn_sketch_for_problem_class(
     if encoding_type == EncodingType.EXPLICIT:
         create_experiment_workspace(workspace)
         preprocessing_timer.resume()
-        sketches = set()
+        unique_sketches = set()  # Use a set to keep track of unique sketches
         unsolvable_states = set()
-        sketch_count_per_state = {}
-        sketches_per_state = defaultdict(set)
         total_sketch_count = 0
         
         # Ensure instance_datas is not empty before iterating
@@ -147,65 +144,49 @@ def learn_sketch_for_problem_class(
                     instance_data.initial_gfa_state_idxs = [gfa_state_idx]
                     asp_factory = ASPFactory(encoding_type, enable_goal_separating_features, max_num_rules)
                     facts = asp_factory.make_facts(preprocessing_data, iteration_data)
+                    mimir_ss_state = preprocessing_data.state_finder.get_mimir_ss_state(gfa_state)
+                    mapped_instance_idx = gfa_state.get_abstraction_index()
+                    mapped_instance_data: InstanceData = instance_datas[mapped_instance_idx]
+                    mapped_problem = mapped_instance_data.mimir_ss.get_pddl_parser().get_problem()
+                    mapped_factories = mapped_instance_data.mimir_ss.get_pddl_parser().get_factories()
+                    print("State:", mimir_ss_state.to_string(mapped_problem, mapped_factories))
                     logging.info(colored("Grounding Logic Program...", "blue", "on_grey"))
                     asp_factory.ground(facts)
                     logging.info(colored("..done", "blue", "on_grey"))
                     logging.info(colored("Solving Logic Program...", "blue", "on_grey"))
-                    #solutions = [asp_factory.solve()]
-                    solutions = list(asp_factory.solve_all_opt())
-                    asp_factory.print_statistics()
-                    #symbols, returncode = asp_factory.solve()
-                    #valid_solutions = symbols, returncode
-                    valid_solutions = [symbols for symbols, status in solutions if symbols is not None]
-                    if len(valid_solutions) == 0:
-                        print(colored("UNSAT problem for selected instances", "red", "on_grey"))
-                        exit(ExitCode.UNSOLVABLE)
-                    elif len(valid_solutions) == 1:
-                        print(colored("ASP solving returns a unique solution", "red", "on_grey"))
-                    else:
-                        print(colored(f"ASP solving returns {len(valid_solutions)}", "red", "on_grey"))
-                    '''
-        
+                    
+                    symbolss, returncode = asp_factory.solve_all_opt()
                     if returncode in [ClingoExitCode.UNSATISFIABLE, ClingoExitCode.EXHAUSTED]:
-                        print(colored("ASP is unsatisfiable!", "red", "on_grey"))
+                        print(colored("ASP is unsatisfiable or exhausted!", "red", "on_grey"))
                         print(colored(f"No sketch of width {width} exists that solves all instances!", "red", "on_grey"))
                         exit(ExitCode.UNSOLVABLE)
                     elif returncode == ClingoExitCode.UNKNOWN:
                         print(colored("ASP solving throws unknown error!", "red", "on_grey"))
                         exit(ExitCode.UNKNOWN)
                     elif returncode == ClingoExitCode.INTERRUPTED:
-                        print(colored("ASP solving iterrupted!", "red", "on_grey"))
+                        print(colored("ASP solving interrupted!", "red", "on_grey"))
                         exit(ExitCode.INTERRUPTED)
-                    '''
-                    for idx, symbols in enumerate(valid_solutions):
-                        print(f"Solution {idx + 1}:")
+                    else:
+                        logging.info(f"Solution found with return code: {returncode}")
+                        
+                    asp_factory.print_statistics()
+                    for symbols in symbolss:
                         dlplan_policy = ExplicitDlplanPolicyFactory().make_dlplan_policy_from_answer_set(symbols, preprocessing_data, iteration_data)
                         sketch = Sketch(dlplan_policy, width)
-                        for gfa_state in gfa_states:
-                            state_idx = preprocessing_data.state_finder.get_gfa_state_idx_from_gfa_state(instance_data.idx, gfa_state)
-                            if state_idx not in sketches_per_state:
-                                sketches_per_state[state_idx] = set()
-                            if state_idx in sketch_count_per_state:
-                                sketch_count_per_state[state_idx] += 1
-                            else:
-                                sketch_count_per_state[state_idx] = 1
-                            if sketch not in sketches_per_state[gfa_state_idx] and str(sketch.dlplan_policy):
-                                if len(valid_solutions) > 1:
-                                    sketches_per_state[gfa_state_idx].add(sketch)
-                                    sketches.add(sketch)
-                                    total_sketch_count += 1
-                                    for idx, sketch in enumerate(sketches):
-                                        print(f"Sketch {idx + 1}:")
-                                        print(str(sketch.dlplan_policy))
-                                        print()
-                                    for state_id in unsolvable_states_from_solution(symbols):
-                                        unsolvable_states.add(state_id)
-
-        else:
-            print("No instance datas found in preprocessing_data. Skipping feature pool printing.")
-
+                        
+                        # Use the string representation to ensure uniqueness
+                        sketch_repr = str(sketch.dlplan_policy).strip()
+                        if sketch_repr:  # Check if the sketch is not empty
+                            if sketch_repr not in unique_sketches:
+                                unique_sketches.add(sketch_repr)
+                                total_sketch_count += 1
+                                
+    
     else:
         raise Exception("No implementation for the given encoding type.")
+    
+    print("Num processed states:", len(gfa_states))
+    print("Num sketch rules:", total_sketch_count)
 
     # Output the result
     with change_dir("output"):
@@ -229,10 +210,11 @@ def learn_sketch_for_problem_class(
         print(f"Total memory: {int(memory_usage() / 1024)} GiB.")
         print(f"Total sketches across all instances: {total_sketch_count}")
 
-        for idx, sketch in enumerate(sketches):
+        # Write unique sketches to files
+        for idx, sketch_repr in enumerate(unique_sketches):
             file_name = f"sketch_{width}_{idx}.txt"
             with open(file_name, "w") as file:
-                file.write(str(sketch.dlplan_policy))
+                file.write(sketch_repr)
                 #print(f"Successfully wrote {file_name}")
 
         print(f"Number of states in training data:", len(preprocessing_data.gfa_states_by_id))
@@ -241,22 +223,10 @@ def learn_sketch_for_problem_class(
             for state_id in unsolvable_states:
                 print(f"Unsolvable state: {state_id}")
 
-        sketches = {sketch for sketches in sketches_per_state.values() for sketch in sketches}
-
-        for state_idx in sketches_per_state:
-            for idx, sketch in enumerate(sketches_per_state[state_idx]):
-                try:
-                    file_name = f"sketch_{width}_{idx}_{state_idx}.txt"
-                    with open(file_name, "w") as file:
-                        file.write(str(sketch.dlplan_policy))
-                    #print(f"Successfully wrote {file_name}")
-                except Exception as e:
-                    print(f"Failed to write sketch for state_idx {state_idx} and sketch index {idx}: {e}")
-
+        # Print feature pool
         print("Feature Pool: ")
         for f in iteration_data.feature_pool:
             print(str(f.dlplan_feature))
         sorted_features = sorted(iteration_data.feature_pool, key=lambda x: str(x.dlplan_feature))
         for feature in sorted_features:
             print(feature)
-
