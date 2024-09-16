@@ -3,11 +3,19 @@
     "activeCommit": 0,
     "commits": [
         {
-            "activePatchIndex": 0,
+            "activePatchIndex": 2,
             "patches": [
                 {
                     "date": 1725617583048,
                     "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1725618266410,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -172,9 +172,9 @@\n                     asp_factory.print_statistics()\n                     for symbols in symbolss:\n                         dlplan_policy = ExplicitDlplanPolicyFactory().make_dlplan_policy_from_answer_set(symbols, preprocessing_data, iteration_data)\n                         sketch = Sketch(dlplan_policy, width)\n-                        \n+                        #exit(1)\n                         # Use the string representation to ensure uniqueness\n                         sketch_repr = str(sketch.dlplan_policy).strip()\n                         if sketch_repr:  # Check if the sketch is not empty\n                             if sketch_repr not in unique_sketches:\n"
+                },
+                {
+                    "date": 1725619107227,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -172,10 +172,10 @@\n                     asp_factory.print_statistics()\n                     for symbols in symbolss:\n                         dlplan_policy = ExplicitDlplanPolicyFactory().make_dlplan_policy_from_answer_set(symbols, preprocessing_data, iteration_data)\n                         sketch = Sketch(dlplan_policy, width)\n-                        #exit(1)\n-                        # Use the string representation to ensure uniqueness\n+                        print(str(sketch.dlplan_policy))\n+                    #exit(1)\n                         sketch_repr = str(sketch.dlplan_policy).strip()\n                         if sketch_repr:  # Check if the sketch is not empty\n                             if sketch_repr not in unique_sketches:\n                                 unique_sketches.add(sketch_repr)\n"
                 }
             ],
             "date": 1725617583048,
