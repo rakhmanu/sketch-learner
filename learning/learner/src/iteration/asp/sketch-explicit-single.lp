@@ -29,49 +29,32 @@ e_satisfied(R, F, C) :- e_n_bot(R, F), feature_effect(C, F, "e_n_bot"), numerica
 e_satisfied(R, F, C) :- e_b_pos(R, F), feature_effect(C, F, "e_b_bot"), feature_condition(C, F, "c_b_pos"), boolean(F),  rule(R), state_pair_class(C).
 e_satisfied(R, F, C) :- e_b_neg(R, F), feature_effect(C, F, "e_b_bot"), feature_condition(C, F, "c_b_neg"), boolean(F),  rule(R), state_pair_class(C).
 
-
-%%%%%{alive_selected(S)} = 1 :- alive(S), nongoal(S).
-%{alive_selected(S) : alive(S), nongoal(S)} = 1.
-
 %%%%%%%%%% C2.1 %%%%%%%%%%
-%{ subgoal_distance(S, D, R) : t_distance(S, _, D), D > 0 } != 0 :- sat_cond(S, R), alive_selected(S), nongoal(S).
 
-{ subgoal_distance(S, D, R) : t_distance(S, _, D), D > 0 } != 0 :- sat_cond(S, R), initial(S), state(S).
-
-% subgoal_distance(0,1,1).
 %%%%%%%%%% C3.1 %%%%%%%%%%
-{ subgoal(S, T, R) : t_distance(S, T, D) } != 0 :- subgoal_distance(S, D, R).
 
 %%%%%%%%%% C4.1 %%%%%%%%%%
-% Require that all equivalence classes C underlying a tuple T of subproblem P[S] are good, effectively bounding the width of P[S]
-:- not sat_rule(R, C), subgoal(S, T, R), contain(S, T, C).
+
+%%% Require that all equivalence classes C underlying a tuple T of subproblem P[S] are good, effectively bounding the width of P[S]
+:- not sat_rule(R, C), selected_tuple(S, T), rule(R), contain(S, T, C).
 
 %%% Unsolvable states can be addressed with d_distance
-:- D <= D',  subgoal_distance(S, D, R), sat_rule(R, C), d_distance(S, C, D'), initial(S), unsolvable(S), nongoal(S).     
-
-%%%%%%%%%% C6.2 %%%%%%%%%%
-:- D < D', t_distance(S, T, D), sat_pair(S, S', R), subgoal_distance(S, D', R), state(S).
+:- D <= D', t_distance(S, T, D), selected_tuple(S, T), sat_rule(R, C), d_distance(S, C, D'), initial(S), unsolvable(S), nongoal(S).
 
 %%%%%%%%%% C6.1 %%%%%%%%%%
+
 % (Optimal-width): Require solvable states S' closer than subgoal to not be assigned to any rule.
-:- D < D', r_distance(S, C, D), sat_rule(R, C), subgoal_distance(S, D', R), state(S).
+:- D < D', r_distance(S, C, D), sat_rule(R, C), selected_tuple(S, T), t_distance(S, T, D'), state(S).
 
 %%%%%%%%%% C7.1 %%%%%%%%%%
 % Define state pair equivalences that are compatible with rules.
 sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);
      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).
 
-
 % Define state pairs that are compatible with rules.
 sat_pair(S, S', R) :- sat_rule(R, C), cover(S, S', C), state(S).
 
-%%%%%%%%%% C7.2 %%%%%%%%%%
-sat_cond(S, R) :- { feature(F) : select(F), not c_satisfied(R, F, C) } = 0, rule(R), state_pair_class(C), cover(S, _, C), nongoal(S).
-
-
 % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances_debug --width 1 --workspace workspace --additional_numericals "n_count(r_primitive(carry,0,1))" "n_count(r_diff(r_primitive(at_g,0,1), r_primitive(at,0,1)))" --disable_feature_generation
-
-
 
 % Display
 #show rule/1.

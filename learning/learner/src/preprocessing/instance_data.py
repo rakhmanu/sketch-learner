@@ -17,7 +17,7 @@ class InstanceData:
     _mimir_ss: mm.StateSpace
     _dlplan_ss: dlplan_state_space.StateSpace
     _ss_state_idx_to_gfa_state_idx: Dict[int, int]
-    initial_gfa_state_idxs: List[int]  # in cases we need multiple initial states
+    _initial_gfa_state_idxs: List[int]  # in cases we need multiple initial states
 
     @property
     def idx(self):
@@ -47,13 +47,6 @@ class InstanceData:
     def ss_state_idx_to_gfa_state_idx(self):
         return self._ss_state_idx_to_gfa_state_idx
 
-    #@property
-    #def initial_gfa_state_idxs(self):
-    #    return self._initial_gfa_state_idxs
-
-        
-    def get_successors(self, s_idx: int) -> List[int]:
-        if self.state_space and hasattr(self.state_space, 'successors_map'):
-            return self.state_space.successors_map.get(s_idx, [])
-        else:
-            return []
+    @property
+    def initial_gfa_state_idxs(self):
+        return self._initial_gfa_state_idxs
