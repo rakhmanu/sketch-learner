@@ -160,7 +160,8 @@ def learn_sketch_for_problem_class(
 
                         asp_factory = ASPFactory(encoding_type, enable_goal_separating_features, max_num_rules)
                         facts = asp_factory.make_facts(preprocessing_data, iteration_data)
-                        facts.append(asp_factory.create_selected_state_fact(gfa_state_global_idx))
+                        # The create_selected_tuple_fact creates a fact selected_tuple(s,t).
+                        # This allows access to the seed state, as well as the tuple
                         facts.append(asp_factory.create_selected_tuple_fact(gfa_state_global_idx, t_idx))
                         asp_factory.ground(facts)
                         # TODO: we currently only return one of the optimal solutions since I updated the code of the ASP factory.

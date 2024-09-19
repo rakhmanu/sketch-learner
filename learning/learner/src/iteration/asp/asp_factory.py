@@ -38,7 +38,6 @@ class ASPFactory:
         self.ctl.add("b_value", ["s","f","v"], "b_value(s,f,v).")
         # state space
         self.ctl.add("state", ["s"], "state(s).")
-        self.ctl.add("selected_state", ["s"], "selected_state(s).")
         self.ctl.add("initial", ["s"], "initial(s).")
         self.ctl.add("solvable", ["s"], "solvable(s).")
         self.ctl.add("unsolvable", ["s"], "unsolvable(s).")
@@ -78,9 +77,6 @@ class ASPFactory:
 
     def _create_state_fact(self, gfa_state_global_idx: int):
         return ("state", (Number(gfa_state_global_idx),))
-
-    def create_selected_state_fact(self, gfa_state_global_idx: int):
-        return ("selected_state", (Number(gfa_state_global_idx),))
 
     def _create_solvable_fact(self, gfa_state_global_idx: int):
         return ("solvable", (Number(gfa_state_global_idx),))
