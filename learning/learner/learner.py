@@ -92,6 +92,9 @@ def learn_sketch_for_problem_class(
 
         for instance_data in preprocessing_data.instance_datas:
             # TODO: when is the best time to generate features?
+            # Based on current instance currently looks most reasonable.
+            # It could be restricted to the states in the tuple graph as well,
+            # which reduces the number of rules, but not fully sure yet about the consequences in the bigger picture.
             iteration_data = IterationData()
             iteration_data.instance_datas = [instance_data]
             iteration_data.gfa_states = instance_data.gfa.get_states()
@@ -140,14 +143,19 @@ def learn_sketch_for_problem_class(
             preprocessing_timer.stop()
             asp_timer.resume()
 
+            # We count the number of subgoal tuples for which no rule could be found.
+            # This usually happens if the pool of features is not sufficiently rich.
+            count_unsat_tuples = 0
+
             for gfa_state in iteration_data.gfa_states:
                 gfa_state_global_idx = gfa_state.get_global_index()
                 tuple_graph = preprocessing_data.gfa_state_global_idx_to_tuple_graph[gfa_state_global_idx]
                 for distance, group in enumerate(tuple_graph.get_vertices_grouped_by_distance()):
                     if distance == 0:
+                        # We skip subgoal tuples at distance zero because they do not encode progress towards a goal.
                         continue
                     for vertex in group:
-                        # Here we find all simplest single sketch rules for pair (state, subgoal tuple)
+                        # Here we find all simplest single sketch rules for a pair (state, subgoal tuple).
                         t_idx = vertex.get_index()
 
                         asp_factory = ASPFactory(encoding_type, enable_goal_separating_features, max_num_rules)
@@ -155,16 +163,16 @@ def learn_sketch_for_problem_class(
                         facts.append(asp_factory.create_selected_state_fact(gfa_state_global_idx))
                         facts.append(asp_factory.create_selected_tuple_fact(gfa_state_global_idx, t_idx))
                         asp_factory.ground(facts)
-                        # Dominik: we currently only return one of the optimal solutions since I updated the code of the ASP factory.
+                        # TODO: we currently only return one of the optimal solutions since I updated the code of the ASP factory.
                         symbols, returncode = asp_factory.solve()
                         symbolss = [symbols,]
 
                         if returncode in [ClingoExitCode.UNSATISFIABLE, ClingoExitCode.EXHAUSTED]:
                             print(colored("ASP is unsatisfiable or exhausted!", "red", "on_grey"))
                             print(colored(f"No sketch of width {width} exists that solves all instances!", "red", "on_grey"))
-                            # Dominik: there are tuples where we get unsat, which we need to look closer into.
-                            # It is not unlikely that this can happens.
-                            # However, double checking to see whether there is a bug or not is necessary.
+                            # There might be tuples where we get unsat.
+                            # If such cases occur, which is very likely in complex domains, then we must look closer into this.
+                            count_unsat_tuples += 1
                             continue
                         elif returncode == ClingoExitCode.UNKNOWN:
                             print(colored("ASP solving throws unknown error!", "red", "on_grey"))
@@ -194,3 +202,7 @@ def learn_sketch_for_problem_class(
         print(f"Verification time: {int(verification_timer.get_elapsed_sec()) + 1} seconds.")
         print(f"Total time: {int(total_timer.get_elapsed_sec()) + 1} seconds.")
         print(f"Total memory: {int(memory_usage() / 1024)} GiB.")
+        print(f"Total number of states: {num_ss_states}")
+        print(f"Total number of abstract states: {num_gfa_states}")
+        print(f"Number of unsat tuples: {count_unsat_tuples}")
+        print(f"Number of sketch rules: {len(sketches)}")
