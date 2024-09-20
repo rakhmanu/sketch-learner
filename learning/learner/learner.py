@@ -5,7 +5,7 @@ from termcolor import colored
 from typing import List, MutableSet, Dict
 import clingo
 import pymimir as mm
-from dlplan.policy import PolicyMinimizer
+from dlplan.policy import PolicyMinimizer, NamedBoolean, NamedNumerical
 from collections import defaultdict
 from .src.exit_codes import ExitCode
 from .src.iteration import EncodingType, ASPFactory, ClingoExitCode, IterationData, LearningStatistics, Sketch, D2sepDlplanPolicyFactory, ExplicitDlplanPolicyFactory, compute_feature_pool, compute_per_state_feature_valuations, compute_state_pair_equivalences, compute_tuple_graph_equivalences, minimize_tuple_graph_equivalences
@@ -81,12 +81,14 @@ def learn_sketch_for_problem_class(
     if not preprocessing_data.instance_datas:
         raise RuntimeError("Data is empty")
 
+    sketches = set()
+    total_features = set()
+    sketch_features = set()
+
     # Learn sketch
     if encoding_type == EncodingType.EXPLICIT:
         create_experiment_workspace(workspace)
         preprocessing_timer.resume()
-
-        sketches = set()
 
         for instance_data in preprocessing_data.instance_datas:
             # TODO: when is the best time to generate features?
@@ -122,6 +124,8 @@ def learn_sketch_for_problem_class(
                 additional_booleans,
                 additional_numericals
             )
+            # Add features to features that were generated
+            total_features.update(feature.dlplan_feature for feature in iteration_data.feature_pool)
 
             logging.info(colored("Constructing PerStateFeatureValuations...", "blue", "on_grey"))
             iteration_data.gfa_state_global_idx_to_feature_evaluations = compute_per_state_feature_valuations(preprocessing_data, iteration_data)
@@ -147,12 +151,12 @@ def learn_sketch_for_problem_class(
 
             for gfa_state in iteration_data.gfa_states:
                 gfa_state_global_idx = gfa_state.get_global_index()
-                
+
                 #print(f"Keys in gfa_state_global_idx_to_tuple_graph: {list(preprocessing_data.gfa_state_global_idx_to_tuple_graph.keys())}")
                 #print(f"gfa_state_global_idx: {gfa_state_global_idx}")
-                
+
                 tuple_graph = preprocessing_data.gfa_state_global_idx_to_tuple_graph[gfa_state_global_idx]
-                
+
                 for distance, group in enumerate(tuple_graph.get_vertices_grouped_by_distance()):
                     if distance == 0:
                         # We skip subgoal tuples at distance zero because they do not encode progress towards a goal.
@@ -162,13 +166,14 @@ def learn_sketch_for_problem_class(
                         t_idx = vertex.get_index()
 
                         asp_factory = ASPFactory(encoding_type, enable_goal_separating_features, max_num_rules)
+
                         facts = asp_factory.make_facts(preprocessing_data, iteration_data)
                         # The create_selected_tuple_fact creates a fact selected_tuple(s,t).
                         # This allows access to the seed state, as well as the tuple
                         facts.append(asp_factory.create_selected_tuple_fact(gfa_state_global_idx, t_idx))
                         asp_factory.ground(facts)
+
                         symbolss, returncode = asp_factory.solve_all_opt()
-                        #symbolss = [symbols,]
 
                         if returncode in [ClingoExitCode.UNSATISFIABLE, ClingoExitCode.EXHAUSTED]:
                             print(colored("ASP is unsatisfiable or exhausted!", "red", "on_grey"))
@@ -185,15 +190,34 @@ def learn_sketch_for_problem_class(
                             exit(ExitCode.INTERRUPTED)
                         else:
                             logging.info(f"Solution found with return code: {returncode}")
-                        
+
                         for symbols in symbolss:
                             dlplan_policy = ExplicitDlplanPolicyFactory().make_dlplan_policy_from_answer_set(symbols, preprocessing_data, iteration_data)
+
                             sketch = Sketch(dlplan_policy, width)
                             sketches.add(sketch)
+                            sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_booleans())
+                            sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_numericals())
                             print(dlplan_policy)
 
     else:
         raise Exception("No implementation for the given encoding type.")
+
+    preprocessing_timer.stop()
+    asp_timer.stop()
+    verification_timer.stop()
+    total_timer.stop()
+
+    # Compute feature histograms by complexity
+    total_features_by_complexity = defaultdict(int)
+    for feature in total_features:
+        total_features_by_complexity[feature.compute_complexity()] += 1
+    total_features_by_complexity = {key: total_features_by_complexity[key] for key in sorted(total_features_by_complexity)}
+
+    sketch_features_by_complexity = defaultdict(int)
+    for feature in sketch_features:
+        sketch_features_by_complexity[feature.compute_complexity()] += 1
+    sketch_features_by_complexity = {key: sketch_features_by_complexity[key] for key in sorted(sketch_features_by_complexity)}
 
     # Output the result
     with change_dir("output"):
@@ -209,6 +233,7 @@ def learn_sketch_for_problem_class(
         print(f"Total number of abstract states: {num_gfa_states}")
         print(f"Number of unsat tuples: {count_unsat_tuples}")
         print(f"Number of sketch rules: {len(sketches)}")
-        
-        
-
+        print(f"Number of total features: {len(total_features)}")
+        print(f"Number of sketch features: {len(sketch_features)}")
+        print(f"Number of total features by complexity: {total_features_by_complexity}")
+        print(f"Number of sketch features by complexity: {sketch_features_by_complexity}")

@@ -401,7 +401,7 @@ class ASPFactory:
                 return None, ClingoExitCode.UNKNOWN
             elif result.interrupted:
                 return None, ClingoExitCode.INTERRUPTED
-            
+
     def solve_all_opt(self):
         """Solves the ASP program and returns all optimal models."""
         optimal_models = []
@@ -411,18 +411,18 @@ class ASPFactory:
                 #print(f"Model Symbols: {model.symbols(shown=True)}")
                 if model.optimality_proven:
                     optimal_models.append(model.symbols(shown=True))
-        if optimal_models:
-            return optimal_models, ClingoExitCode.SATISFIABLE
-        else:
-            result = handle.get()
-            if result.exhausted:
-                return None, ClingoExitCode.EXHAUSTED
-            elif result.unsatisfiable:
-                return None, ClingoExitCode.UNSATISFIABLE
-            elif result.unknown:
-                return None, ClingoExitCode.UNKNOWN
-            elif result.interrupted:
-                return None, ClingoExitCode.INTERRUPTED
+            if optimal_models:
+                return optimal_models, ClingoExitCode.SATISFIABLE
+            else:
+                result = handle.get()
+                if result.exhausted:
+                    return None, ClingoExitCode.EXHAUSTED
+                elif result.unsatisfiable:
+                    return None, ClingoExitCode.UNSATISFIABLE
+                elif result.unknown:
+                    return None, ClingoExitCode.UNKNOWN
+                elif result.interrupted:
+                    return None, ClingoExitCode.INTERRUPTED
 
 
     def print_statistics(self):

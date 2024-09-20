@@ -1,5 +1,0 @@
-(:policy
-(:booleans )
-(:numericals (f2 "n_count(c_primitive(cell,0))") (f11 "n_count(r_transitive_closure(r_primitive(adjacent,0,1)))"))
-(:rule (:conditions (:c_n_eq f2) (:c_n_eq f11)) (:effects (:e_n_dec f2) (:e_n_inc f11)))
-)

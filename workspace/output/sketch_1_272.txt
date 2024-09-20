@@ -1,5 +1,0 @@
-(:policy
-(:booleans )
-(:numericals (f3 "n_count(c_primitive(locatable,0))") (f4 "n_count(c_primitive(package,0))"))
-(:rule (:conditions (:c_n_gt f3) (:c_n_eq f4)) (:effects (:e_n_bot f3) (:e_n_inc f4)))
-)
