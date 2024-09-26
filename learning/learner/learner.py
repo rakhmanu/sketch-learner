@@ -84,13 +84,17 @@ def learn_sketch_for_problem_class(
     sketches = set()
     total_features = set()
     sketch_features = set()
-
     # Learn sketch
     if encoding_type == EncodingType.EXPLICIT:
         create_experiment_workspace(workspace)
         preprocessing_timer.resume()
 
         for instance_data in preprocessing_data.instance_datas:
+            print(f"Instance {instance_data.idx}:")
+            for state in instance_data.mimir_ss.get_states():
+                    state_data = state.get_state()  
+                    fluents = state_data.get_fluent_atoms()
+                    print(f"State {state.get_index()} fluents: {fluents}")
             # TODO: when is the best time to generate features?
             # Based on current instance currently looks most reasonable.
             # It could be restricted to the states in the tuple graph as well,
@@ -156,7 +160,7 @@ def learn_sketch_for_problem_class(
                 #print(f"gfa_state_global_idx: {gfa_state_global_idx}")
 
                 tuple_graph = preprocessing_data.gfa_state_global_idx_to_tuple_graph[gfa_state_global_idx]
-
+                
                 for distance, group in enumerate(tuple_graph.get_vertices_grouped_by_distance()):
                     if distance == 0:
                         # We skip subgoal tuples at distance zero because they do not encode progress towards a goal.

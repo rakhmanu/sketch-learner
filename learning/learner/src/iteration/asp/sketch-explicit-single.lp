@@ -29,6 +29,7 @@ e_satisfied(R, F, C) :- e_n_bot(R, F), feature_effect(C, F, "e_n_bot"), numerica
 e_satisfied(R, F, C) :- e_b_pos(R, F), feature_effect(C, F, "e_b_bot"), feature_condition(C, F, "c_b_pos"), boolean(F),  rule(R), state_pair_class(C).
 e_satisfied(R, F, C) :- e_b_neg(R, F), feature_effect(C, F, "e_b_bot"), feature_condition(C, F, "c_b_neg"), boolean(F),  rule(R), state_pair_class(C).
 
+
 %%%%%%%%%% C2 %%%%%%%%%%
 
 %%% Require that all equivalence classes C underlying a tuple T of subproblem P[S] are good, effectively bounding the width of P[S]
@@ -50,10 +51,16 @@ e_satisfied(R, F, C) :- e_b_neg(R, F), feature_effect(C, F, "e_b_bot"), feature_
 sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);
      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).
 
+
+%%%%%%%%%% C6 %%%%%%%%%%
+%:- selected_tuple(S, T), rule(R), sat_rule(R, C), state_pair_class(C), S == T.
+
+
 % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances_debug --width 1 --workspace workspace --additional_numericals "n_count(r_primitive(carry,0,1))" "n_count(r_diff(r_primitive(at_g,0,1), r_primitive(at,0,1)))" --disable_feature_generation
 % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances --width 1 --workspace workspace 
 
 % Display
+#show selected_tuple/2.
 #show rule/1.
 #show select/1.
 
