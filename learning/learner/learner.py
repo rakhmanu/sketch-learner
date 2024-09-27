@@ -29,7 +29,7 @@ def learn_sketch_for_problem_class(
     workspace: Path,
     width: int,
     disable_closed_Q: bool = True,
-    max_num_states_per_instance: int = 2000,
+    max_num_states_per_instance: int = 10000,
     max_time_per_instance: int = 10,
     encoding_type: EncodingType = EncodingType.EXPLICIT,
     max_num_rules: int = 1,
@@ -52,6 +52,8 @@ def learn_sketch_for_problem_class(
     if additional_numericals is None:
         additional_numericals = []
     instance_filepaths = list(problems_directory.iterdir())
+   
+
     add_console_handler(logging.getLogger(), logging.INFO)
     create_experiment_workspace(workspace)
     change_working_directory(workspace)
@@ -78,9 +80,6 @@ def learn_sketch_for_problem_class(
 
     preprocessing_data = PreprocessingData(domain_data, instance_datas, state_finder, gfa_state_id_to_tuple_graph)
     preprocessing_timer.stop()
-
-    print(num_ss_states, num_gfa_states)
-    exit(1)
 
     if not preprocessing_data.instance_datas:
         raise RuntimeError("Data is empty")

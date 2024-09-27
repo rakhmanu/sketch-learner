@@ -1,0 +1,87 @@
+digraph {
+rankdir="LR"
+s5[label="(instance index=31, state index=5, atoms={visited(loc-x2-y0), visited(loc-x2-y1), visited(loc-x2-y2), at-robot(loc-x1-y2), visited(loc-x1-y2)})"]
+s4[label="(instance index=31, state index=4, atoms={visited(loc-x2-y0), visited(loc-x2-y1), at-robot(loc-x2-y2), visited(loc-x2-y2)})"]
+s17[label="(instance index=31, state index=17, atoms={visited(loc-x2-y0), visited(loc-x2-y1), at-robot(loc-x2-y2), visited(loc-x2-y2), visited(loc-x1-y2)})"]
+s6[label="(instance index=31, state index=6, atoms={visited(loc-x2-y0), at-robot(loc-x2-y1), visited(loc-x2-y1), visited(loc-x2-y2)})"]
+s18[label="(instance index=31, state index=18, atoms={visited(loc-x2-y0), at-robot(loc-x2-y1), visited(loc-x2-y1), visited(loc-x2-y2), visited(loc-x1-y2)})"]
+s2[label="(instance index=31, state index=2, atoms={visited(loc-x2-y0), at-robot(loc-x2-y1), visited(loc-x2-y1)})"]
+s7[label="(instance index=31, state index=7, atoms={visited(loc-x2-y0), at-robot(loc-x2-y0), visited(loc-x2-y1), visited(loc-x2-y2)})"]
+s19[label="(instance index=31, state index=19, atoms={visited(loc-x2-y0), at-robot(loc-x2-y0), visited(loc-x2-y1), visited(loc-x2-y2), visited(loc-x1-y2)})"]
+s3[label="(instance index=31, state index=3, atoms={visited(loc-x2-y0), at-robot(loc-x2-y0), visited(loc-x2-y1)})"]
+s0[label="(instance index=31, state index=0, atoms={visited(loc-x2-y0), at-robot(loc-x2-y0)})"]
+s1[peripheries=2,label="(instance index=31, state index=1, atoms={visited(loc-x2-y0), visited(loc-x1-y0), at-robot(loc-x1-y0)})"]
+s8[peripheries=2,label="(instance index=31, state index=8, atoms={visited(loc-x2-y0), visited(loc-x1-y0), at-robot(loc-x1-y0), visited(loc-x2-y1), visited(loc-x2-y2)})"]
+s9[peripheries=2,label="(instance index=31, state index=9, atoms={visited(loc-x2-y0), at-robot(loc-x2-y0), visited(loc-x1-y0), visited(loc-x2-y1), visited(loc-x2-y2)})"]
+s13[peripheries=2,label="(instance index=31, state index=13, atoms={visited(loc-x2-y0), visited(loc-x1-y0), visited(loc-x2-y1), at-robot(loc-x2-y2), visited(loc-x2-y2), visited(loc-x1-y2)})"]
+s14[peripheries=2,label="(instance index=31, state index=14, atoms={visited(loc-x2-y0), visited(loc-x1-y0), at-robot(loc-x2-y1), visited(loc-x2-y1), visited(loc-x2-y2), visited(loc-x1-y2)})"]
+s15[peripheries=2,label="(instance index=31, state index=15, atoms={visited(loc-x2-y0), at-robot(loc-x2-y0), visited(loc-x1-y0), visited(loc-x2-y1), visited(loc-x2-y2), visited(loc-x1-y2)})"]
+s20[peripheries=2,label="(instance index=31, state index=20, atoms={visited(loc-x2-y0), visited(loc-x1-y0), at-robot(loc-x1-y0), visited(loc-x2-y1)})"]
+s16[peripheries=2,label="(instance index=31, state index=16, atoms={visited(loc-x2-y0), visited(loc-x1-y0), at-robot(loc-x1-y0), visited(loc-x2-y1), visited(loc-x2-y2), visited(loc-x1-y2)})"]
+s10[peripheries=2,label="(instance index=31, state index=10, atoms={visited(loc-x2-y0), visited(loc-x1-y0), at-robot(loc-x2-y1), visited(loc-x2-y1), visited(loc-x2-y2)})"]
+s21[peripheries=2,label="(instance index=31, state index=21, atoms={visited(loc-x2-y0), at-robot(loc-x2-y0), visited(loc-x1-y0), visited(loc-x2-y1)})"]
+s11[peripheries=2,label="(instance index=31, state index=11, atoms={visited(loc-x2-y0), visited(loc-x1-y0), visited(loc-x2-y1), at-robot(loc-x2-y2), visited(loc-x2-y2)})"]
+s22[peripheries=2,label="(instance index=31, state index=22, atoms={visited(loc-x2-y0), visited(loc-x1-y0), at-robot(loc-x2-y1), visited(loc-x2-y1)})"]
+s12[peripheries=2,label="(instance index=31, state index=12, atoms={visited(loc-x2-y0), visited(loc-x1-y0), visited(loc-x2-y1), visited(loc-x2-y2), at-robot(loc-x1-y2), visited(loc-x1-y2)})"]
+s23[peripheries=2,label="(instance index=31, state index=23, atoms={visited(loc-x2-y0), at-robot(loc-x2-y0), visited(loc-x1-y0)})"]
+Dangling [ label = "", style = invis ]
+{ rank = same; Dangling }
+Dangling -> s0
+{ rank = same; s0}
+{ rank = same; s4,s17}
+{ rank = same; s6,s18,s2}
+{ rank = same; s7,s19,s3,s0}
+{ rank = same; s1,s8,s9,s13,s14,s15,s20,s16,s10,s21,s11,s22,s12,s23}
+{
+s5->s17
+}
+{
+s4->s6
+s4->s5
+s17->s5
+s17->s18
+}
+{
+s6->s7
+s6->s4
+s18->s19
+s18->s17
+s2->s4
+s2->s3
+}
+{
+s7->s6
+s7->s8
+s19->s18
+s19->s16
+s3->s20
+s3->s2
+s0->s2
+s0->s1
+}
+{
+s1->s23
+s8->s9
+s9->s10
+s9->s8
+s13->s14
+s13->s12
+s14->s15
+s14->s13
+s15->s14
+s15->s16
+s20->s21
+s16->s15
+s10->s11
+s10->s9
+s21->s22
+s21->s20
+s11->s12
+s11->s10
+s22->s21
+s22->s11
+s12->s13
+s23->s22
+s23->s1
+}
+}

@@ -122,7 +122,16 @@ def compute_instance_datas(domain_filepath: Path,
         logging.info("...done")
         if len(abstractions) == 0:
             return None * 3
+        #logging.info(f"Instance file paths before creating state spaces: {[str(p) for p in instance_filepaths]}")
 
+        state_spaces = mm.StateSpace.create(str(domain_filepath), [str(p) for p in instance_filepaths], state_space_options)
+
+        #logging.info(f"State spaces created: {[str(space.get_problem().get_filepath()) for space in state_spaces]}")
+        #logging.info(f"Instance file paths before creating global faithful abstractions: {[str(p) for p in instance_filepaths]}")
+
+        abstractions = mm.GlobalFaithfulAbstraction.create(str(domain_filepath), [str(p) for p in instance_filepaths], abstractions_options)
+        #logging.info(f"Global faithful abstractions created: {[str(gfa.get_problem().get_filepath()) for gfa in abstractions]}")
+        
         logging.info("Constructing StateSpaces...")
         memories = []
         for gfa in abstractions:
