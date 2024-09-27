@@ -1,4 +1,5 @@
 import logging
+import time
 from collections import defaultdict
 from pathlib import Path
 from termcolor import colored
@@ -78,6 +79,9 @@ def learn_sketch_for_problem_class(
     preprocessing_data = PreprocessingData(domain_data, instance_datas, state_finder, gfa_state_id_to_tuple_graph)
     preprocessing_timer.stop()
 
+    print(num_ss_states, num_gfa_states)
+    exit(1)
+
     if not preprocessing_data.instance_datas:
         raise RuntimeError("Data is empty")
 
@@ -92,7 +96,7 @@ def learn_sketch_for_problem_class(
         for instance_data in preprocessing_data.instance_datas:
             print(f"Instance {instance_data.idx}:")
             for state in instance_data.mimir_ss.get_states():
-                    state_data = state.get_state()  
+                    state_data = state.get_state()
                     fluents = state_data.get_fluent_atoms()
                     print(f"State {state.get_index()} fluents: {fluents}")
             # TODO: when is the best time to generate features?
@@ -153,14 +157,18 @@ def learn_sketch_for_problem_class(
             # This usually happens if the pool of features is not sufficiently rich.
             count_unsat_tuples = 0
 
-            for gfa_state in iteration_data.gfa_states:
+            for gfa_state in instance_data.gfa.get_states():
                 gfa_state_global_idx = gfa_state.get_global_index()
+                gfa_state_idx = gfa_state.get_index()
+
+                if instance_data.gfa.is_deadend_state(gfa_state_idx):
+                    continue
 
                 #print(f"Keys in gfa_state_global_idx_to_tuple_graph: {list(preprocessing_data.gfa_state_global_idx_to_tuple_graph.keys())}")
                 #print(f"gfa_state_global_idx: {gfa_state_global_idx}")
 
                 tuple_graph = preprocessing_data.gfa_state_global_idx_to_tuple_graph[gfa_state_global_idx]
-                
+
                 for distance, group in enumerate(tuple_graph.get_vertices_grouped_by_distance()):
                     if distance == 0:
                         # We skip subgoal tuples at distance zero because they do not encode progress towards a goal.
@@ -169,15 +177,19 @@ def learn_sketch_for_problem_class(
                         # Here we find all simplest single sketch rules for a pair (state, subgoal tuple).
                         t_idx = vertex.get_index()
 
+                        start_time = time.time()
                         asp_factory = ASPFactory(encoding_type, enable_goal_separating_features, max_num_rules)
+                        facts = asp_factory.make_facts(preprocessing_data, iteration_data, gfa_state, t_idx)
 
-                        facts = asp_factory.make_facts(preprocessing_data, iteration_data)
-                        # The create_selected_tuple_fact creates a fact selected_tuple(s,t).
-                        # This allows access to the seed state, as well as the tuple
-                        facts.append(asp_factory.create_selected_tuple_fact(gfa_state_global_idx, t_idx))
+                        print(f"Factory time: {(time.time() - start_time):.2f} seconds")
+
+                        start_time = time.time()
                         asp_factory.ground(facts)
+                        print(f"Grounding time: {(time.time() - start_time):.2f} seconds")
 
+                        start_time = time.time()
                         symbolss, returncode = asp_factory.solve_all_opt()
+                        print(f"Solving time: {(time.time() - start_time):.2f} seconds")
 
                         if returncode in [ClingoExitCode.UNSATISFIABLE, ClingoExitCode.EXHAUSTED]:
                             print(colored("ASP is unsatisfiable or exhausted!", "red", "on_grey"))

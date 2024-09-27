@@ -39,7 +39,7 @@ def compute_tuple_graph_equivalences(preprocessing_data: PreprocessingData,
                 instance_data_prime = preprocessing_data.instance_datas[instance_prime_idx]
                 gfa_state_prime_idx = gfa_state_prime.get_index()
 
-                r_idx = iteration_data.gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx].subgoal_gfa_state_id_to_r_idx[gfa_state_prime_global_idx]
+                r_idx = iteration_data.gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx].subgoal_gfa_state_global_idx_to_r_idx[gfa_state_prime_global_idx]
 
                 if instance_data_prime.gfa.is_deadend_state(gfa_state_prime_idx):
                     r_idx_to_deadend_distance[r_idx] = min(r_idx_to_deadend_distance.get(r_idx, float("inf")), s_distance)
@@ -51,7 +51,7 @@ def compute_tuple_graph_equivalences(preprocessing_data: PreprocessingData,
                 for mimir_ss_state_prime in tuple_vertex.get_states():
                     gfa_state_prime = preprocessing_data.state_finder.get_gfa_state_from_ss_state_idx(instance_idx, instance_data.mimir_ss.get_state_index(mimir_ss_state_prime))
                     gfa_state_prime_global_idx = gfa_state_prime.get_global_index()
-                    r_idx = iteration_data.gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx].subgoal_gfa_state_id_to_r_idx[gfa_state_prime_global_idx]
+                    r_idx = iteration_data.gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx].subgoal_gfa_state_global_idx_to_r_idx[gfa_state_prime_global_idx]
                     r_idxs.add(r_idx)
                 t_idx_to_distance[t_idx] = s_distance
                 t_idx_to_r_idxs[t_idx] = r_idxs
