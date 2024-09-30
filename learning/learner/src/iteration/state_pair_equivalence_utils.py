@@ -12,6 +12,34 @@ from .iteration_data import IterationData
 
 from ..preprocessing import PreprocessingData
 
+def retrieve_inverse_state_pairs(gfa_state_global_idx_to_state_pair_equivalence, s_i, s_j):
+    """
+    Retrieve inverse state pairs where s_j is a valid subgoal state for s_i and vice versa.
+    This function runs in time linear in the number of state pair equivalence classes.
+    """
+    inverse_state_pairs = []
+
+    # Get the equivalence class for s_i
+    if s_i not in gfa_state_global_idx_to_state_pair_equivalence:
+        return inverse_state_pairs  # If s_i has no equivalence class, return empty
+
+    state_pair_equivalence_i = gfa_state_global_idx_to_state_pair_equivalence[s_i]
+
+    # Check if s_j is a valid subgoal for s_i
+    for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence_i.r_idx_to_subgoal_gfa_state_global_idxs.items():
+        if s_j in subgoal_gfa_state_global_idxs:
+            inverse_state_pairs.append((s_i, s_j, r_idx))  # s_i -> s_j
+    
+    # Now check if s_i is a valid subgoal for s_j
+    if s_j in gfa_state_global_idx_to_state_pair_equivalence:
+        state_pair_equivalence_j = gfa_state_global_idx_to_state_pair_equivalence[s_j]
+        for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence_j.r_idx_to_subgoal_gfa_state_global_idxs.items():
+            if s_i in subgoal_gfa_state_global_idxs:
+                inverse_state_pairs.append((s_j, s_i, r_idx))  # s_j -> s_i
+
+    return inverse_state_pairs
+
+
 
 def make_conditions(policy_builder: dlplan_policy.PolicyFactory,
     feature_pool: List[Feature],
@@ -63,7 +91,9 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
     rule_repr_to_idx = dict()
 
     gfa_state_global_idx_to_state_pair_equivalence: Dict[int, StatePairEquivalence] = dict()
-
+    # Reverse lookup for each target state to find source states and corresponding r_idx
+    reverse_lookup: Dict[int, List[tuple[int, int]]] = defaultdict(list)
+    
     for gfa_state in iteration_data.gfa_states:
         instance_idx = gfa_state.get_faithful_abstraction_index()
         instance_data = preprocessing_data.instance_datas[instance_idx]
@@ -106,8 +136,18 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
                 r_idx_to_distance[r_idx] = min(r_idx_to_distance.get(r_idx, math.inf), s_distance)
                 r_idx_to_subgoal_gfa_state_global_idxs[r_idx].add(gfa_state_prime_global_idx)
                 subgoal_gfa_state_global_idx_to_r_idx[gfa_state_prime_global_idx] = r_idx
-
+                
         gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx] = StatePairEquivalence(r_idx_to_subgoal_gfa_state_global_idxs, r_idx_to_distance, subgoal_gfa_state_global_idx_to_r_idx)
+        #graph_state_ids = {s.get_global_index() for s in iteration_data.gfa_states}
+        #equivalence_state_ids = set(gfa_state_global_idx_to_state_pair_equivalence.keys())
+        #print("States in graph:", graph_state_ids)
+        #print("States in equivalence:", equivalence_state_ids)
+
+        s_i = gfa_state_global_idx  # `s_i` is the current global index of the state
+        for r_idx, subgoal_gfa_state_global_idxs in gfa_state_global_idx_to_state_pair_equivalence[s_i].r_idx_to_subgoal_gfa_state_global_idxs.items():
+            for s_j in subgoal_gfa_state_global_idxs:  # `s_j` is each subgoal state related to `s_i`
+                reverse = retrieve_inverse_state_pairs(gfa_state_global_idx_to_state_pair_equivalence, s_i, s_j)
+                print(reverse)
 
     # Idea to retrieve inverse state pairs in time that is linear in the number of state pair equivalence classes
     # for r_idx, subgoal_gfa_state_global_idxs in gfa_state_global_idx_to_state_pair_equivalence[s_i].r_idx_to_subgoal_gfa_state_global_idxs:
