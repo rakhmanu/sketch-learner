@@ -220,18 +220,18 @@ def learn_sketch_for_problem_class(
     print("Comparison between Tuple Graph States and State Pair Equivalences:")
     for (s_i, s_j) in tuple_graph_states:
         match_found = False
-        for gfa_state_global_idx, state_pair_equivalence in iteration_data.gfa_state_global_idx_to_state_pair_equivalence.items():
+        for gfa_state_global_idx, state_pair_equivalence in  iteration_data.state_pair_equivalences.items():
             for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
                 for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
                     if gfa_state_global_idx == s_i and subgoal_gfa_state_global_idx == s_j:
                         print(f" ({s_i} -> {s_j}) matches with state pair equivalence.")
                         match_found = True
                         break
-                if match_found:
-                    break
+                    if match_found:
+                        break
 
-        if not match_found:
-            print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
+                    if not match_found:
+                        print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
     # Compute feature histograms by complexity
     total_features_by_complexity = defaultdict(int)
     for feature in total_features:

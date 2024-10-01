@@ -208,7 +208,25 @@ def learn_sketch_for_problem_class(
                             sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_numericals())
                             print(dlplan_policy)
                             
+                print("Tuple Graph States:")
+                for (s_i, s_j) in tuple_graph_states:
+                    print(f"State {s_i}, state {s_j}")
+                
+                state_pair_equivalences = []
+        
+                for equivalence in iteration_data.state_pair_equivalences:
+                    print(equivalence)
+                    
+                print("State Pair Equivalences:")
+                for (s_i, s_j) in state_pair_equivalences:
+                    print(f"Equivalent states: {s_i} and {s_j}")
 
+                print("Comparison between Tuple Graph States and State Pair Equivalences:")
+                for (s_i, s_j) in tuple_graph_states:
+                    if (s_i, s_j) in state_pair_equivalences:
+                        print(f" ({s_i} -> {s_j}) matches with state pair equivalence.")
+                    else:
+                        print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
     else:
         raise Exception("No implementation for the given encoding type.")
 
@@ -217,21 +235,6 @@ def learn_sketch_for_problem_class(
     verification_timer.stop()
     total_timer.stop()
 
-    print("Comparison between Tuple Graph States and State Pair Equivalences:")
-    for (s_i, s_j) in tuple_graph_states:
-        match_found = False
-        for gfa_state_global_idx, state_pair_equivalence in iteration_data.gfa_state_global_idx_to_state_pair_equivalence.items():
-            for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
-                for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
-                    if gfa_state_global_idx == s_i and subgoal_gfa_state_global_idx == s_j:
-                        print(f" ({s_i} -> {s_j}) matches with state pair equivalence.")
-                        match_found = True
-                        break
-                if match_found:
-                    break
-
-        if not match_found:
-            print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
     # Compute feature histograms by complexity
     total_features_by_complexity = defaultdict(int)
     for feature in total_features:

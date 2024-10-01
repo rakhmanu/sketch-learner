@@ -1,0 +1,18 @@
+{
+    "sourceFile": "workspace/0.dot",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1727823846511,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1727823846511,
+            "name": "Commit-0",
+            "content": "digraph {\nrankdir=\"LR\"\ns1[label=\"(instance index=0, state index=1, atoms={free(left), free(right), at(ball1,rooma), at-robby(roomb)})\"]\ns0[label=\"(instance index=0, state index=0, atoms={free(left), free(right), at(ball1,rooma), at-robby(rooma)})\"]\ns2[label=\"(instance index=0, state index=2, atoms={free(left), at-robby(rooma), carry(ball1,right)})\"]\ns3[label=\"(instance index=0, state index=3, atoms={free(right), at-robby(rooma), carry(ball1,left)})\"]\ns7[label=\"(instance index=0, state index=7, atoms={free(left), carry(ball1,right), at-robby(roomb)})\"]\ns4[label=\"(instance index=0, state index=4, atoms={free(right), carry(ball1,left), at-robby(roomb)})\"]\ns5[peripheries=2,label=\"(instance index=0, state index=5, atoms={free(left), free(right), at(ball1,roomb), at-robby(roomb)})\"]\ns6[peripheries=2,label=\"(instance index=0, state index=6, atoms={free(left), free(right), at-robby(rooma), at(ball1,roomb)})\"]\nDangling [ label = \"\", style = invis ]\n{ rank = same; Dangling }\nDangling -> s0\n{ rank = same; s0}\n{ rank = same; s0}\n{ rank = same; s2,s3}\n{ rank = same; s7,s4}\n{ rank = same; s5,s6}\n{\ns1->s1\ns1->s0\n}\n{\ns0->s3\ns0->s2\ns0->s1\ns0->s0\n}\n{\ns2->s7\ns2->s2\ns2->s0\ns3->s4\ns3->s3\ns3->s0\n}\n{\ns7->s7\ns7->s5\ns7->s2\ns4->s5\ns4->s4\ns4->s3\n}\n{\ns5->s7\ns5->s6\ns5->s5\ns5->s4\ns6->s6\ns6->s5\n}\n}\n"
+        }
+    ]
+}

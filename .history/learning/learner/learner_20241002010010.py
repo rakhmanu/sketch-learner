@@ -230,8 +230,8 @@ def learn_sketch_for_problem_class(
                 if match_found:
                     break
 
-        if not match_found:
-            print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
+            if not match_found:
+                print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
     # Compute feature histograms by complexity
     total_features_by_complexity = defaultdict(int)
     for feature in total_features:
