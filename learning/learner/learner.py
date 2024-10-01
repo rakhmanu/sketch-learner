@@ -13,16 +13,6 @@ from .src.iteration import EncodingType, ASPFactory, ClingoExitCode, IterationDa
 from .src.util import Timer, create_experiment_workspace, change_working_directory, write_file, change_dir, memory_usage, add_console_handler, print_separation_line
 from .src.preprocessing import InstanceData, PreprocessingData, StateFinder, compute_instance_datas, compute_tuple_graphs
 
-def unsolvable_states_from_solution(symbols):
-    unsolvable_states = set()
-    for symbol in symbols:
-        if isinstance(symbol, clingo.Symbol) and symbol.name == "unsolvable":
-            if len(symbol.arguments) >= 2:
-                state_id = int(symbol.arguments[0].number)
-                instance_id = int(symbol.arguments[1].number)
-                unsolvable_states.add((state_id, instance_id))
-    return unsolvable_states
-
 def learn_sketch_for_problem_class(
     domain_filepath: Path,
     problems_directory: Path,

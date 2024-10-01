@@ -56,6 +56,7 @@ class ASPFactory:
         self.ctl.add("selected_tuple", ["s", "t"], "selected_tuple(s,t).")
         self.ctl.add("contain", ["s", "t", "r"], "contain(s,t,r).")
         self.ctl.add("cover", ["s1", "s2", "r"], "cover(s1,s2,r).")
+        self.ctl.add("inverse_cover", ["s2", "s1", "r"], "cover(s2,s1,r).")
         self.ctl.add("t_distance", ["s", "t", "d"], "t_distance(s,t,d).")
         self.ctl.add("d_distance", ["s", "r", "d"], "d_distance(s,r,d).")
         self.ctl.add("r_distance", ["s", "r", "d"], "r_distance(s,r,d).")
@@ -205,6 +206,33 @@ class ASPFactory:
     def _create_cover_fact(self, gfa_state_id: int, gfa_state_prime_id: int, r_idx: int):
         return ("cover", (Number(gfa_state_id), Number(gfa_state_prime_id), Number(r_idx)))
 
+    def _create_inverse_cover_fact(self, gfa_state_id: int, gfa_state_prime_id: int, r_idx: int):
+        return ("inverse_cover", (Number(gfa_state_prime_id), Number(gfa_state_id), Number(r_idx))) 
+    
+    def _make_inverse_state_pair_equivalence_facts(self,
+                                               preprocessing_data: PreprocessingData,
+                                               iteration_data: IterationData):
+        facts = []
+        f = self._precompute_inverse_pair_mapping(iteration_data.gfa_state_global_idx_to_state_pair_equivalence)
+        
+        # Iterate through the precomputed inverse pair mapping
+        for (s_j, s_i), equivalence_classes in f.items():
+            for r_idx in equivalence_classes:
+                facts.append(self._create_inverse_cover_fact(s_j, s_i, r_idx))
+        
+        return facts
+    
+    def _precompute_inverse_pair_mapping(self, gfa_state_global_idx_to_state_pair_equivalence):
+        
+        f = defaultdict(set)  # f(s, s') -> set of equivalence classes
+        
+        for gfa_state_global_idx, state_pair_equivalence in gfa_state_global_idx_to_state_pair_equivalence.items():
+            for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
+                for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
+                    f[(subgoal_gfa_state_global_idx, gfa_state_global_idx)].add(r_idx)
+        
+        return f
+    
     def _make_state_pair_equivalence_data_facts(self,
                                                 preprocessing_data: PreprocessingData,
                                                 iteration_data: IterationData,
@@ -227,6 +255,7 @@ class ASPFactory:
                 f_idx = int(effect.get_named_element().get_key()[1:])
                 facts.append(self._create_feature_effect_fact(effect, r_idx, f_idx))
         return facts
+
 
 
     def _create_tuple_fact(self, gfa_state_global_idx: int, t_idx: int):
@@ -298,7 +327,7 @@ class ASPFactory:
         facts.extend(self._make_state_pair_equivalence_data_facts(preprocessing_data, iteration_data, gfa_state))
         facts.extend(self._make_tuple_graph_equivalence_facts(preprocessing_data, iteration_data))
         facts.extend(self._make_tuple_graph_facts(preprocessing_data, iteration_data, gfa_state))
-
+        facts.append(self._make_inverse_state_pair_equivalence_facts(preprocessing_data, iteration_data))
         # The create_selected_tuple_fact creates a fact selected_tuple(s,t).
         # This allows access to the seed state, as well as the tuple
         facts.append(self._create_selected_tuple_fact(gfa_state.get_global_index(), t_idx))
@@ -385,8 +414,24 @@ class ASPFactory:
         return facts
 
     def ground(self, facts=[]):
-        facts.append(("base", []))
-        self.ctl.ground(facts)  # ground a set of facts
+        parts = []
+        
+        for fact in facts:
+            if isinstance(fact, tuple) and isinstance(fact[0], str):
+                print(f"Fact before validation: {fact}")  # Debug print
+                if isinstance(fact[1], list):
+                    parts.append(fact)
+                else:
+                    raise ValueError(f"Fact {fact} is not in the correct format. Expected (string, list).")
+        
+        parts.append(("base", []))
+        self.ctl.ground(parts)
+
+
+    
+    #def ground(self, facts=[]):
+    #    facts.append(("base", []))
+    #    self.ctl.ground(facts)  # ground a set of facts
 
     def solve(self):
         """ https://potassco.org/clingo/python-api/current/clingo/solving.html """

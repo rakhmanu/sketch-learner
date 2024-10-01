@@ -79,7 +79,7 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
         r_idx_to_subgoal_gfa_state_global_idxs = defaultdict(set)
         subgoal_gfa_state_global_idx_to_r_idx = dict()
         inverse_pairs = defaultdict(set)
-        f = defaultdict(set) 
+        #f = defaultdict(set) 
 
         # add conditions
         conditions = make_conditions(policy_builder,
@@ -121,15 +121,15 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
                 for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
                     print(f"    State Pair: ({gfa_state_global_idx}, {subgoal_gfa_state_global_idx})")
                     inverse_pairs[(subgoal_gfa_state_global_idx, gfa_state_global_idx)].add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
-                    f[(subgoal_gfa_state_global_idx, gfa_state_global_idx)].add(r_idx)
+                    #f[(subgoal_gfa_state_global_idx, gfa_state_global_idx)].add(r_idx)
                     
      
         for pair, inverse_set in inverse_pairs.items():
             for inverse in inverse_set:
                 print(f"Inverse State Pair: {inverse}")
 
-        for (s_j, s_i), equivalence_classes in f.items():
-            print(f"Inverse State Pair: ({s_j}, {s_i}) belongs to equivalence classes: {equivalence_classes}")
+        #for (s_j, s_i), equivalence_classes in f.items():
+            #print(f"Inverse State Pair: ({s_j}, {s_i}) belongs to equivalence classes: {equivalence_classes}")
     # Idea to retrieve inverse state pairs in time that is linear in the number of state pair equivalence classes
     # for r_idx, subgoal_gfa_state_global_idxs in gfa_state_global_idx_to_state_pair_equivalence[s_i].r_idx_to_subgoal_gfa_state_global_idxs:
     #     if s_j in subgoal_gfa_state_global_idxs:
