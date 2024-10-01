@@ -55,8 +55,8 @@ class ASPFactory:
         self.ctl.add("tuple", ["s", "t"], "tuple(s,t).")
         self.ctl.add("selected_tuple", ["s", "t"], "selected_tuple(s,t).")
         self.ctl.add("contain", ["s", "t", "r"], "contain(s,t,r).")
-        self.ctl.add("cover", ["s1", "s2", "r"], "cover(s1,s2,r).")
-        self.ctl.add("inverse_cover", ["s2", "s1", "r"], "cover(s2,s1,r).")
+        self.ctl.add("cover", ["s1", "s2", "r"], "cover(s1, s2,r).")
+        self.ctl.add("inverse", ["s2", "s1", "r"], "inverse(s2, s1,r).")
         self.ctl.add("t_distance", ["s", "t", "d"], "t_distance(s,t,d).")
         self.ctl.add("d_distance", ["s", "r", "d"], "d_distance(s,r,d).")
         self.ctl.add("r_distance", ["s", "r", "d"], "r_distance(s,r,d).")
@@ -207,7 +207,7 @@ class ASPFactory:
         return ("cover", (Number(gfa_state_id), Number(gfa_state_prime_id), Number(r_idx)))
 
     def _create_inverse_cover_fact(self, gfa_state_id: int, gfa_state_prime_id: int, r_idx: int):
-        return ("inverse_cover", (Number(gfa_state_prime_id), Number(gfa_state_id), Number(r_idx))) 
+        return ("inverse", (Number(gfa_state_prime_id), Number(gfa_state_id), Number(r_idx))) 
     
     def _make_inverse_state_pair_equivalence_facts(self,
                                                preprocessing_data: PreprocessingData,
@@ -215,10 +215,9 @@ class ASPFactory:
         facts = []
         f = self._precompute_inverse_pair_mapping(iteration_data.gfa_state_global_idx_to_state_pair_equivalence)
         
-        # Iterate through the precomputed inverse pair mapping
         for (s_j, s_i), equivalence_classes in f.items():
             for r_idx in equivalence_classes:
-                facts.append(self._create_inverse_cover_fact(s_j, s_i, r_idx))
+                facts.append(self._create_cover_fact(s_j, s_i, r_idx))
         
         return facts
     
@@ -255,7 +254,6 @@ class ASPFactory:
                 f_idx = int(effect.get_named_element().get_key()[1:])
                 facts.append(self._create_feature_effect_fact(effect, r_idx, f_idx))
         return facts
-
 
 
     def _create_tuple_fact(self, gfa_state_global_idx: int, t_idx: int):
@@ -418,15 +416,14 @@ class ASPFactory:
         
         for fact in facts:
             if isinstance(fact, tuple) and isinstance(fact[0], str):
-                print(f"Fact before validation: {fact}")  # Debug print
-                if isinstance(fact[1], list):
-                    parts.append(fact)
+                #print(f"Fact before validation: {fact}") 
+                if isinstance(fact[1], (list, tuple)):
+                    parts.append((fact[0], fact[1]))
                 else:
-                    raise ValueError(f"Fact {fact} is not in the correct format. Expected (string, list).")
+                    raise ValueError(f"Fact {fact} is not in the correct format.")
         
         parts.append(("base", []))
         self.ctl.ground(parts)
-
 
     
     #def ground(self, facts=[]):

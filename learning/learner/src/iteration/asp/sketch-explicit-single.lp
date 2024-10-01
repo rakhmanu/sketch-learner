@@ -52,13 +52,15 @@ sat_rule(R, C) :- { feature(F) : not c_satisfied(R, F, C), select(F);
      feature(F) : not e_satisfied(R, F, C), select(F) } = 0, rule(R), state_pair_class(C).
 
 %%%%%%%%%% C6 %%%%%%%%%%
-:- inverse_cover(S2, S1, R), sat_rule(R, C), rule(R), state_pair_class(C).
+
+% Remove inverse state pairs from the tuples
+:- inverse(S, S', R), rule(R).
 
 % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances_debug --width 1 --workspace workspace --additional_numericals "n_count(r_primitive(carry,0,1))" "n_count(r_diff(r_primitive(at_g,0,1), r_primitive(at,0,1)))" --disable_feature_generation
 % python3 learning/main.py --domain_filepath learning/benchmarks/gripper/domain.pddl --problems_directory learning/benchmarks/gripper/instances --width 1 --workspace workspace 
 
 % Display
-#show selected_tuple/2.
+
 #show rule/1.
 #show select/1.
 
