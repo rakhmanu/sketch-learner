@@ -87,7 +87,7 @@ def learn_sketch_for_problem_class(
             for state in instance_data.mimir_ss.get_states():
                     state_data = state.get_state()
                     fluents = state_data.get_fluent_atoms()
-                    #print(f"State {state.get_index()} fluents: {fluents}")
+                    print(f"State {state.get_index()} fluents: {fluents}")
             # TODO: when is the best time to generate features?
             # Based on current instance currently looks most reasonable.
             # It could be restricted to the states in the tuple graph as well,
@@ -145,8 +145,6 @@ def learn_sketch_for_problem_class(
             # We count the number of subgoal tuples for which no rule could be found.
             # This usually happens if the pool of features is not sufficiently rich.
             count_unsat_tuples = 0
-            tuple_graph_states = set()
-           
 
             for gfa_state in instance_data.gfa.get_states():
                 gfa_state_global_idx = gfa_state.get_global_index()
@@ -167,8 +165,7 @@ def learn_sketch_for_problem_class(
                     for vertex in group:
                         # Here we find all simplest single sketch rules for a pair (state, subgoal tuple).
                         t_idx = vertex.get_index()
-                        tuple_graph_states.add((gfa_state_global_idx, t_idx))
-    
+
                         start_time = time.time()
                         asp_factory = ASPFactory(encoding_type, enable_goal_separating_features, max_num_rules)
                         facts = asp_factory.make_facts(preprocessing_data, iteration_data, gfa_state, t_idx)
@@ -207,26 +204,7 @@ def learn_sketch_for_problem_class(
                             sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_booleans())
                             sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_numericals())
                             print(dlplan_policy)
-                            
-                print("Tuple Graph States:")
-                for (s_i, s_j) in tuple_graph_states:
-                    print(f"State {s_i}, state {s_j}")
-                
-                state_pair_equivalences = []
-        
-                for equivalence in iteration_data.state_pair_equivalences:
-                    print(equivalence)
-                    
-                print("State Pair Equivalences:")
-                for (s_i, s_j) in state_pair_equivalences:
-                    print(f"Equivalent states: {s_i} and {s_j}")
 
-                print("Comparison between Tuple Graph States and State Pair Equivalences:")
-                for (s_i, s_j) in tuple_graph_states:
-                    if (s_i, s_j) in state_pair_equivalences:
-                        print(f" ({s_i} -> {s_j}) matches with state pair equivalence.")
-                    else:
-                        print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
     else:
         raise Exception("No implementation for the given encoding type.")
 

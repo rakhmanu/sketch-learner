@@ -167,8 +167,8 @@ def learn_sketch_for_problem_class(
                     for vertex in group:
                         # Here we find all simplest single sketch rules for a pair (state, subgoal tuple).
                         t_idx = vertex.get_index()
-                        tuple_graph_states.add((gfa_state_global_idx, t_idx))
-    
+                        #print(f"State Transition: s_i = {gfa_state_global_idx}, s_j = {t_idx}")
+                       
                         start_time = time.time()
                         asp_factory = ASPFactory(encoding_type, enable_goal_separating_features, max_num_rules)
                         facts = asp_factory.make_facts(preprocessing_data, iteration_data, gfa_state, t_idx)
@@ -207,26 +207,7 @@ def learn_sketch_for_problem_class(
                             sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_booleans())
                             sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_numericals())
                             print(dlplan_policy)
-                            
-                print("Tuple Graph States:")
-                for (s_i, s_j) in tuple_graph_states:
-                    print(f"State {s_i}, state {s_j}")
-                
-                state_pair_equivalences = []
-        
-                for equivalence in iteration_data.state_pair_equivalences:
-                    print(equivalence)
-                    
-                print("State Pair Equivalences:")
-                for (s_i, s_j) in state_pair_equivalences:
-                    print(f"Equivalent states: {s_i} and {s_j}")
 
-                print("Comparison between Tuple Graph States and State Pair Equivalences:")
-                for (s_i, s_j) in tuple_graph_states:
-                    if (s_i, s_j) in state_pair_equivalences:
-                        print(f" ({s_i} -> {s_j}) matches with state pair equivalence.")
-                    else:
-                        print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
     else:
         raise Exception("No implementation for the given encoding type.")
 

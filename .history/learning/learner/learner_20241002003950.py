@@ -224,9 +224,9 @@ def learn_sketch_for_problem_class(
                 print("Comparison between Tuple Graph States and State Pair Equivalences:")
                 for (s_i, s_j) in tuple_graph_states:
                     if (s_i, s_j) in state_pair_equivalences:
-                        print(f" ({s_i} -> {s_j}) matches with state pair equivalence.")
+                        print(f"Transition ({s_i} -> {s_j}) matches with state pair equivalence.")
                     else:
-                        print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
+                        print(f"Transition ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
     else:
         raise Exception("No implementation for the given encoding type.")
 

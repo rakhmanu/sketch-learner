@@ -145,8 +145,7 @@ def learn_sketch_for_problem_class(
             # We count the number of subgoal tuples for which no rule could be found.
             # This usually happens if the pool of features is not sufficiently rich.
             count_unsat_tuples = 0
-            tuple_graph_states = set()
-           
+            total_transitions = 0 
 
             for gfa_state in instance_data.gfa.get_states():
                 gfa_state_global_idx = gfa_state.get_global_index()
@@ -167,8 +166,8 @@ def learn_sketch_for_problem_class(
                     for vertex in group:
                         # Here we find all simplest single sketch rules for a pair (state, subgoal tuple).
                         t_idx = vertex.get_index()
-                        tuple_graph_states.add((gfa_state_global_idx, t_idx))
-    
+                        print(f"State Transition: s_i = {gfa_state_global_idx}, s_j = {t_idx}")
+                        total_transitions += 1
                         start_time = time.time()
                         asp_factory = ASPFactory(encoding_type, enable_goal_separating_features, max_num_rules)
                         facts = asp_factory.make_facts(preprocessing_data, iteration_data, gfa_state, t_idx)
@@ -207,26 +206,7 @@ def learn_sketch_for_problem_class(
                             sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_booleans())
                             sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_numericals())
                             print(dlplan_policy)
-                            
-                print("Tuple Graph States:")
-                for (s_i, s_j) in tuple_graph_states:
-                    print(f"State {s_i}, state {s_j}")
-                
-                state_pair_equivalences = []
-        
-                for equivalence in iteration_data.state_pair_equivalences:
-                    print(equivalence)
-                    
-                print("State Pair Equivalences:")
-                for (s_i, s_j) in state_pair_equivalences:
-                    print(f"Equivalent states: {s_i} and {s_j}")
 
-                print("Comparison between Tuple Graph States and State Pair Equivalences:")
-                for (s_i, s_j) in tuple_graph_states:
-                    if (s_i, s_j) in state_pair_equivalences:
-                        print(f" ({s_i} -> {s_j}) matches with state pair equivalence.")
-                    else:
-                        print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
     else:
         raise Exception("No implementation for the given encoding type.")
 
@@ -256,6 +236,7 @@ def learn_sketch_for_problem_class(
         print(f"Verification time: {int(verification_timer.get_elapsed_sec()) + 1} seconds.")
         print(f"Total time: {int(total_timer.get_elapsed_sec()) + 1} seconds.")
         print(f"Total memory: {int(memory_usage() / 1024)} GiB.")
+        print(f"Total number of transitions: {total_transitions}")
         print(f"Total number of states: {num_ss_states}")
         print(f"Total number of abstract states: {num_gfa_states}")
         print(f"Number of unsat tuples: {count_unsat_tuples}")
