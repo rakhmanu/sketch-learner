@@ -130,6 +130,8 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
 
         #for (s_j, s_i), equivalence_classes in f.items():
             #print(f"Inverse State Pair: ({s_j}, {s_i}) belongs to equivalence classes: {equivalence_classes}")
+            
+            
     # Idea to retrieve inverse state pairs in time that is linear in the number of state pair equivalence classes
     # for r_idx, subgoal_gfa_state_global_idxs in gfa_state_global_idx_to_state_pair_equivalence[s_i].r_idx_to_subgoal_gfa_state_global_idxs:
     #     if s_j in subgoal_gfa_state_global_idxs:
@@ -137,6 +139,6 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
     # (Can be optimized by precomputing a mapping f : S x S -> 2^X where S is the set of abstract states and X is the set of state pair equivalences,
     # such that f(s,s') is the set of state pair equivalence classes Y \subseteq X such that [s',s] is in y for all y in Y.)
 
-    return rules,gfa_state_global_idx_to_state_pair_equivalence
+    return rules, gfa_state_global_idx_to_state_pair_equivalence
 
 

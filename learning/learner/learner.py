@@ -20,7 +20,7 @@ def learn_sketch_for_problem_class(
     width: int,
     disable_closed_Q: bool = True,
     max_num_states_per_instance: int = 10000,
-    max_time_per_instance: int = 10,
+    max_time_per_instance: int = 10000,
     encoding_type: EncodingType = EncodingType.EXPLICIT,
     max_num_rules: int = 1,
     enable_goal_separating_features: bool = True,
@@ -228,19 +228,25 @@ def learn_sketch_for_problem_class(
             for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
                 inverse_pairs.add((gfa_state_global_idx, subgoal_gfa_state_global_idx))
                 inverse_pairs.add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
-
-    # Initialize sets for storing results
-    tuple_graph_states_without = set()
-    tuple_graph_states_with_inverse = []
-
-    # Classify tuple graph states
+                
+    
+    tuple_graph_states_without_inverse = set()
+    tuple_graph_states_with_inverse = set()
+    print("states in the state pair equivalences", inverse_pairs)
+    print("states in the tuple graph", tuple_graph_states)
     for (s_i, s_j) in tuple_graph_states:
         if (s_j, s_i) in inverse_pairs:
-            tuple_graph_states_with_inverse.append((s_i, s_j))
+            tuple_graph_states_with_inverse.add((s_i, s_j))
+            tuple_graph_states_with_inverse.add((s_j, s_i))
         else:
-            tuple_graph_states_without.add((s_i, s_j))
-
-    # Print results
+            tuple_graph_states_without_inverse.add((s_i, s_j))
+            
+    tuple_graph_states_without = tuple_graph_states_without_inverse.copy()
+    
+    for (s_i, s_j) in tuple_graph_states_with_inverse:
+        if (s_j, s_i) in tuple_graph_states_without:
+            tuple_graph_states_without.discard((s_j, s_i))
+    
     print("Tuple Graph States without inverse pairs:")
     if tuple_graph_states_without:
         for state in tuple_graph_states_without:
@@ -255,7 +261,9 @@ def learn_sketch_for_problem_class(
     else:
         print("No tuple graph states with inverse pairs.")
 
-
+    print("total number of states", len(tuple_graph_states))
+    print("total number of states with", len(tuple_graph_states_without))
+    print("total number of states without", len(tuple_graph_states_with_inverse))
             
     # Compute feature histograms by complexity
     total_features_by_complexity = defaultdict(int)
