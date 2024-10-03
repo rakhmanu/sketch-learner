@@ -235,7 +235,7 @@ def learn_sketch_for_problem_class(
 
     # Classify tuple graph states
     for (s_i, s_j) in tuple_graph_states:
-        if (s_j, s_i) in inverse_pairs:
+        if (s_i, s_j) in inverse_pairs and (s_j, s_i) in inverse_pairs:
             tuple_graph_states_with_inverse.append((s_i, s_j))
         else:
             tuple_graph_states_without.add((s_i, s_j))
@@ -254,7 +254,6 @@ def learn_sketch_for_problem_class(
             print(state)
     else:
         print("No tuple graph states with inverse pairs.")
-
 
             
     # Compute feature histograms by complexity

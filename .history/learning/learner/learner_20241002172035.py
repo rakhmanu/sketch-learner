@@ -229,15 +229,15 @@ def learn_sketch_for_problem_class(
                 inverse_pairs.add((gfa_state_global_idx, subgoal_gfa_state_global_idx))
                 inverse_pairs.add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
 
-    # Initialize sets for storing results
+    # Initialize sets for results
     tuple_graph_states_without = set()
-    tuple_graph_states_with_inverse = []
+    tuple_graph_states_with_inverse = set()
 
     # Classify tuple graph states
     for (s_i, s_j) in tuple_graph_states:
-        if (s_j, s_i) in inverse_pairs:
-            tuple_graph_states_with_inverse.append((s_i, s_j))
-        else:
+        if (s_i, s_j) in inverse_pairs and (s_j, s_i) in inverse_pairs:
+            tuple_graph_states_with_inverse.add((s_i, s_j))
+        elif (s_i, s_j) not in inverse_pairs:
             tuple_graph_states_without.add((s_i, s_j))
 
     # Print results

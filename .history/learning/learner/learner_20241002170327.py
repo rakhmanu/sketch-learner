@@ -220,43 +220,37 @@ def learn_sketch_for_problem_class(
     total_timer.stop()
 
     print("Comparison between Tuple Graph States and State Pair Equivalences:")
-
-    # Create a set for inverse pairs
-    inverse_pairs = set()
-    for gfa_state_global_idx, state_pair_equivalence in iteration_data.gfa_state_global_idx_to_state_pair_equivalence.items():
-        for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
-            for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
-                inverse_pairs.add((gfa_state_global_idx, subgoal_gfa_state_global_idx))
-                inverse_pairs.add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
-
-    # Initialize sets for storing results
-    tuple_graph_states_without = set()
-    tuple_graph_states_with_inverse = []
-
-    # Classify tuple graph states
     for (s_i, s_j) in tuple_graph_states:
-        if (s_j, s_i) in inverse_pairs:
-            tuple_graph_states_with_inverse.append((s_i, s_j))
-        else:
-            tuple_graph_states_without.add((s_i, s_j))
+        match_found = False
+        for gfa_state_global_idx, state_pair_equivalence in iteration_data.gfa_state_global_idx_to_state_pair_equivalence.items():
+            for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
+                for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
+                    if gfa_state_global_idx == s_i and subgoal_gfa_state_global_idx == s_j:
+                        #print(f" ({s_i} -> {s_j}) matches with state pair equivalence.")
+                        match_found = True
+                        break
+                if match_found:
+                    break
 
-    # Print results
-    print("Tuple Graph States without inverse pairs:")
-    if tuple_graph_states_without:
-        for state in tuple_graph_states_without:
-            print(state)
-    else:
-        print("No tuple graph states without inverse pairs.")
-
-    print("\nTuple Graph States with Inverse Pairs:")
-    if tuple_graph_states_with_inverse:
-        for state in tuple_graph_states_with_inverse:
-            print(state)
-    else:
-        print("No tuple graph states with inverse pairs.")
-
-
+        #if not match_found:
+            #print(f" ({s_i} -> {s_j}) does NOT match any state pair equivalence.")
             
+        inverse_pairs = set()
+
+        for gfa_state_global_idx, state_pair_equivalence in iteration_data.gfa_state_global_idx_to_state_pair_equivalence.items():
+            for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
+                for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
+                    inverse_pairs.add((gfa_state_global_idx, subgoal_gfa_state_global_idx))
+                    inverse_pairs.add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
+
+        filtered_tuple_graph_states = set()
+        for (s_i, s_j) in tuple_graph_states:
+            if (s_i, s_j) not in inverse_pairs:
+                filtered_tuple_graph_states.add((s_i, s_j))
+                
+        print("Tuple Graph States without inverse pairs:")
+        if state in filtered_tuple_graph_states:
+            print(state)
     # Compute feature histograms by complexity
     total_features_by_complexity = defaultdict(int)
     for feature in total_features:
