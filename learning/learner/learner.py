@@ -67,7 +67,8 @@ def learn_sketch_for_problem_class(
         logging.info(colored("Initializing TupleGraphs...", "blue", "on_grey"))
         gfa_state_id_to_tuple_graph: Dict[int, mm.TupleGraph] = compute_tuple_graphs(domain_data, instance_datas, state_finder, width, enable_dump_files)
         logging.info(colored("..done", "blue", "on_grey"))
-
+        
+                
     preprocessing_data = PreprocessingData(domain_data, instance_datas, state_finder, gfa_state_id_to_tuple_graph)
     preprocessing_timer.stop()
 
@@ -77,6 +78,7 @@ def learn_sketch_for_problem_class(
     sketches = set()
     total_features = set()
     sketch_features = set()
+   
     # Learn sketch
     if encoding_type == EncodingType.EXPLICIT:
         create_experiment_workspace(workspace)
@@ -161,7 +163,7 @@ def learn_sketch_for_problem_class(
                 #print(f"gfa_state_global_idx: {gfa_state_global_idx}")
 
                 tuple_graph = preprocessing_data.gfa_state_global_idx_to_tuple_graph[gfa_state_global_idx]
-
+                
                 for distance, group in enumerate(tuple_graph.get_vertices_grouped_by_distance()):
                     if distance == 0:
                         # We skip subgoal tuples at distance zero because they do not encode progress towards a goal.
@@ -169,6 +171,7 @@ def learn_sketch_for_problem_class(
                     for vertex in group:
                         # Here we find all simplest single sketch rules for a pair (state, subgoal tuple).
                         t_idx = vertex.get_index()
+                     
                         tuple_graph_states.add((gfa_state_global_idx, t_idx))
     
                         start_time = time.time()
@@ -210,6 +213,7 @@ def learn_sketch_for_problem_class(
                             sketch_features.update(feature.get_element() for feature in sketch.dlplan_policy.get_numericals())
                             print(dlplan_policy)
                             
+                            
 
     else:
         raise Exception("No implementation for the given encoding type.")
@@ -219,51 +223,50 @@ def learn_sketch_for_problem_class(
     verification_timer.stop()
     total_timer.stop()
 
-    print("Comparison between Tuple Graph States and State Pair Equivalences:")
 
-    # Create a set for inverse pairs
-    inverse_pairs = set()
+    state_pairs = set()
     for gfa_state_global_idx, state_pair_equivalence in iteration_data.gfa_state_global_idx_to_state_pair_equivalence.items():
         for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
             for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
-                inverse_pairs.add((gfa_state_global_idx, subgoal_gfa_state_global_idx))
-                inverse_pairs.add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
-                
-    
-    tuple_graph_states_without_inverse = set()
-    tuple_graph_states_with_inverse = set()
-    print("states in the state pair equivalences", inverse_pairs)
-    print("states in the tuple graph", tuple_graph_states)
-    for (s_i, s_j) in tuple_graph_states:
-        if (s_j, s_i) in inverse_pairs:
-            tuple_graph_states_with_inverse.add((s_i, s_j))
-            tuple_graph_states_with_inverse.add((s_j, s_i))
+                state_pairs.add((gfa_state_global_idx, subgoal_gfa_state_global_idx))
+                state_pairs.add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
+    print("state pair equivalences", state_pairs)
+
+    state_pair_equivalences_with_inverse = set()
+    state_pair_equivalences_without_inverse = set()
+    seen_pairs = set()
+
+    for (si, sj) in state_pairs:
+        pair = (si, sj)
+        inverse_pair = (sj, si)
+        
+        if inverse_pair in seen_pairs:
+            state_pair_equivalences_with_inverse.add(pair)
+            state_pair_equivalences_with_inverse.add(inverse_pair)
         else:
-            tuple_graph_states_without_inverse.add((s_i, s_j))
-            
-    tuple_graph_states_without = tuple_graph_states_without_inverse.copy()
-    
-    for (s_i, s_j) in tuple_graph_states_with_inverse:
-        if (s_j, s_i) in tuple_graph_states_without:
-            tuple_graph_states_without.discard((s_j, s_i))
-    
-    print("Tuple Graph States without inverse pairs:")
-    if tuple_graph_states_without:
-        for state in tuple_graph_states_without:
-            print(state)
-    else:
-        print("No tuple graph states without inverse pairs.")
+            seen_pairs.add(pair)
 
-    print("\nTuple Graph States with Inverse Pairs:")
-    if tuple_graph_states_with_inverse:
-        for state in tuple_graph_states_with_inverse:
-            print(state)
-    else:
-        print("No tuple graph states with inverse pairs.")
+    for (si, sj) in seen_pairs:
+        if (sj, si) not in seen_pairs:
+            state_pair_equivalences_without_inverse.add((si, sj))
 
-    print("total number of states", len(tuple_graph_states))
-    print("total number of states with", len(tuple_graph_states_without))
-    print("total number of states without", len(tuple_graph_states_with_inverse))
+    print("State Pair Equivalences with Inverse Pairs:")
+    if state_pair_equivalences_with_inverse:
+        for state_pair in state_pair_equivalences_with_inverse:
+            print(state_pair)
+    else:
+        print("No state pair equivalences with inverse pairs.")
+
+    print("\nState Pair Equivalences without Inverse Pairs:")
+    if state_pair_equivalences_without_inverse:
+        for state_pair in state_pair_equivalences_without_inverse:
+            print(state_pair)
+    else:
+        print("No state pair equivalences without inverse pairs.")
+        
+    print("total number of state pairs", len(state_pairs))
+    print("total number of state pairs with", len(state_pair_equivalences_with_inverse))
+    print("total number of state pairs  without", len(state_pair_equivalences_without_inverse))
             
     # Compute feature histograms by complexity
     total_features_by_complexity = defaultdict(int)

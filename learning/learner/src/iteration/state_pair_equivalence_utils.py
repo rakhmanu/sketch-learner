@@ -57,8 +57,8 @@ def make_effects(policy_builder: dlplan_policy.PolicyFactory,
 
 
 def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
-                                    iteration_data: IterationData):
-    # We have to take a new policy_builder because our feature pool F uses indices 0,...,|F|
+                                     iteration_data: IterationData):
+    # Initialize the policy builder
     policy_builder = preprocessing_data.domain_data.policy_builder
     rules = []
     rule_repr_to_idx = dict()
@@ -75,13 +75,12 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
         tuple_graph = preprocessing_data.gfa_state_global_idx_to_tuple_graph[gfa_state_global_idx]
         tuple_graph_states_by_distance = tuple_graph.get_states_grouped_by_distance()
 
-        r_idx_to_distance = dict()
+        r_idx_to_distance = {}
         r_idx_to_subgoal_gfa_state_global_idxs = defaultdict(set)
-        subgoal_gfa_state_global_idx_to_r_idx = dict()
-        inverse_pairs = defaultdict(set)
-        #f = defaultdict(set) 
+        subgoal_gfa_state_global_idx_to_r_idx = {}
+        state_pairs = set()
 
-        # add conditions
+        # Add conditions
         conditions = make_conditions(policy_builder,
                                      iteration_data.feature_pool,
                                      iteration_data.gfa_state_global_idx_to_feature_evaluations[gfa_state_global_idx])
@@ -91,13 +90,13 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
                 gfa_state_prime = preprocessing_data.state_finder.get_gfa_state_from_ss_state_idx(instance_idx, instance_data.mimir_ss.get_state_index(mimir_ss_state_prime))
                 gfa_state_prime_global_idx = gfa_state_prime.get_global_index()
 
-                # add effects
+                # Add effects
                 effects = make_effects(policy_builder,
                                         iteration_data.feature_pool,
                                         iteration_data.gfa_state_global_idx_to_feature_evaluations[gfa_state_global_idx],
                                         iteration_data.gfa_state_global_idx_to_feature_evaluations[gfa_state_prime_global_idx])
 
-                # add rule
+                # Add rule
                 rule = policy_builder.make_rule(conditions, effects)
                 rule_repr = repr(rule)
                 if rule_repr in rule_repr_to_idx:
@@ -106,32 +105,81 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
                     r_idx = len(rules)
                     rule_repr_to_idx[rule_repr] = r_idx
                     rules.append(rule)
+
                 r_idx_to_distance[r_idx] = min(r_idx_to_distance.get(r_idx, math.inf), s_distance)
                 r_idx_to_subgoal_gfa_state_global_idxs[r_idx].add(gfa_state_prime_global_idx)
                 subgoal_gfa_state_global_idx_to_r_idx[gfa_state_prime_global_idx] = r_idx
-                
-        gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx] = StatePairEquivalence(r_idx_to_subgoal_gfa_state_global_idxs, r_idx_to_distance, subgoal_gfa_state_global_idx_to_r_idx)
-        
-        for gfa_state_global_idx, state_pair_equivalence in gfa_state_global_idx_to_state_pair_equivalence.items():
-            print(f"State: {gfa_state_global_idx}")
-            
-            for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
-                print(f"  Rule Index: {r_idx} -> Subgoal States: {subgoal_gfa_state_global_idxs}")
-                
-                for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
-                    print(f"    State Pair: ({gfa_state_global_idx}, {subgoal_gfa_state_global_idx})")
-                    inverse_pairs[(subgoal_gfa_state_global_idx, gfa_state_global_idx)].add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
-                    #f[(subgoal_gfa_state_global_idx, gfa_state_global_idx)].add(r_idx)
-                    
-     
-        for pair, inverse_set in inverse_pairs.items():
-            for inverse in inverse_set:
-                print(f"Inverse State Pair: {inverse}")
 
-        #for (s_j, s_i), equivalence_classes in f.items():
-            #print(f"Inverse State Pair: ({s_j}, {s_i}) belongs to equivalence classes: {equivalence_classes}")
+        # Create StatePairEquivalence instance for the current state
+        gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx] = StatePairEquivalence(
+            _r_idx_to_subgoal_gfa_state_global_idxs=r_idx_to_subgoal_gfa_state_global_idxs,
+            _r_idx_to_closest_subgoal_distance=r_idx_to_distance,
+            _subgoal_gfa_state_global_idx_to_r_idx=subgoal_gfa_state_global_idx_to_r_idx
+        )
+    
+        for r_idx, subgoal_gfa_state_global_idxs in r_idx_to_subgoal_gfa_state_global_idxs.items():
+            for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
+                state_pairs.add((gfa_state_global_idx, subgoal_gfa_state_global_idx))
+                state_pairs.add((subgoal_gfa_state_global_idx, gfa_state_global_idx))
+
+        print("State Pair Equivalences:", state_pairs)
+
+        state_pair_equivalences_with_inverse = set()
+        state_pair_equivalences_without_inverse = set()
+        seen_pairs = set()
+
+        for (si, sj) in state_pairs:
+            pair = (si, sj)
+            inverse_pair = (sj, si)
+
+            if inverse_pair in seen_pairs:
+                state_pair_equivalences_with_inverse.add(pair)
+                state_pair_equivalences_with_inverse.add(inverse_pair)
+            else:
+                seen_pairs.add(pair)
+
+        for (si, sj) in seen_pairs:
+            if (sj, si) not in seen_pairs:
+                state_pair_equivalences_without_inverse.add((si, sj))
+
+        print("State Pair Equivalences with Inverse Pairs:")
+        if state_pair_equivalences_with_inverse:
+            for state_pair in state_pair_equivalences_with_inverse:
+                print(state_pair)
+        else:
+            print("No state pair equivalences with inverse pairs.")
+
+        print("\nState Pair Equivalences without Inverse Pairs:")
+        if state_pair_equivalences_without_inverse:
+            for state_pair in state_pair_equivalences_without_inverse:
+                print(state_pair)
+        else:
+            print("No state pair equivalences without inverse pairs.")
+
+        for gfa_state_global_idx in gfa_state_global_idx_to_state_pair_equivalence.keys():
+            state_pair_equivalence = gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx]
             
+            new_r_idx_to_subgoal_gfa_state_global_idxs = defaultdict(set)
+            new_r_idx_to_distance = {}
+            new_subgoal_gfa_state_global_idx_to_r_idx = {}
+
+            for r_idx, subgoal_gfa_state_global_idxs in state_pair_equivalence.r_idx_to_subgoal_gfa_state_global_idxs.items():
+                for subgoal_gfa_state_global_idx in subgoal_gfa_state_global_idxs:
+                    if (gfa_state_global_idx, subgoal_gfa_state_global_idx) in state_pair_equivalences_without_inverse:
+                        new_r_idx_to_subgoal_gfa_state_global_idxs[r_idx].add(subgoal_gfa_state_global_idx)
+                        new_subgoal_gfa_state_global_idx_to_r_idx[subgoal_gfa_state_global_idx] = r_idx
+                        new_r_idx_to_distance[r_idx] = state_pair_equivalence.r_idx_to_closest_subgoal_distance.get(r_idx, math.inf)
+
+            gfa_state_global_idx_to_state_pair_equivalence[gfa_state_global_idx] = StatePairEquivalence(
+                _r_idx_to_subgoal_gfa_state_global_idxs=new_r_idx_to_subgoal_gfa_state_global_idxs,
+                _r_idx_to_closest_subgoal_distance=new_r_idx_to_distance,
+                _subgoal_gfa_state_global_idx_to_r_idx=new_subgoal_gfa_state_global_idx_to_r_idx
+            )
             
+
+    return rules, gfa_state_global_idx_to_state_pair_equivalence
+
+        
     # Idea to retrieve inverse state pairs in time that is linear in the number of state pair equivalence classes
     # for r_idx, subgoal_gfa_state_global_idxs in gfa_state_global_idx_to_state_pair_equivalence[s_i].r_idx_to_subgoal_gfa_state_global_idxs:
     #     if s_j in subgoal_gfa_state_global_idxs:
@@ -139,6 +187,6 @@ def compute_state_pair_equivalences(preprocessing_data: PreprocessingData,
     # (Can be optimized by precomputing a mapping f : S x S -> 2^X where S is the set of abstract states and X is the set of state pair equivalences,
     # such that f(s,s') is the set of state pair equivalence classes Y \subseteq X such that [s',s] is in y for all y in Y.)
 
-    return rules, gfa_state_global_idx_to_state_pair_equivalence
+ 
 
 

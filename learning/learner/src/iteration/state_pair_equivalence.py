@@ -13,6 +13,7 @@ class StatePairEquivalence:
     _r_idx_to_subgoal_gfa_state_global_idxs: Dict[int, MutableSet[int]]
     _r_idx_to_closest_subgoal_distance: Dict[int, int]
     _subgoal_gfa_state_global_idx_to_r_idx: Dict[int, int]
+    
 
     @property
     def r_idx_to_subgoal_gfa_state_global_idxs(self):
